@@ -1,0 +1,15 @@
+# Godot 4
+.godot/
+/android/
+
+# Builds exportados
+/build/
+*.exe
+*.pck
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Python (ferramentas)
+__pycache__/

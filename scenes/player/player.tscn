@@ -1,0 +1,194 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="AudioStream" path="res://assets/audio/footstep_wood_1.wav" id="2_fs1"]
+[ext_resource type="AudioStream" path="res://assets/audio/footstep_wood_2.wav" id="3_fs2"]
+[ext_resource type="AudioStream" path="res://assets/audio/footstep_wood_3.wav" id="4_fs3"]
+[ext_resource type="AudioStream" path="res://assets/audio/footstep_wood_4.wav" id="5_fs4"]
+[ext_resource type="AudioStream" path="res://assets/audio/flashlight_click.wav" id="6_click"]
+[ext_resource type="AudioStream" path="res://assets/audio/breathing_loop.wav" id="7_breath"]
+[ext_resource type="AudioStream" path="res://assets/audio/heartbeat_loop.wav" id="8_heart"]
+[ext_resource type="Script" path="res://scripts/ui/post_fx.gd" id="9_postfx"]
+[ext_resource type="Shader" path="res://shaders/psx_post.gdshader" id="10_postshader"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="11_hud"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.3
+height = 1.75
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_post"]
+shader = ExtResource("10_postshader")
+shader_parameter/color_levels = 20.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/grain_amount = 0.07
+shader_parameter/vignette_amount = 0.75
+shader_parameter/scanline_amount = 0.05
+shader_parameter/saturation = 0.75
+shader_parameter/gamma = 1.0
+shader_parameter/fear = 0.0
+shader_parameter/glitch = 0.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_small"]
+font_size = 11
+font_color = Color(0.85, 0.82, 0.75, 1)
+outline_size = 3
+outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_pause"]
+font_size = 14
+font_color = Color(0.75, 0.7, 0.65, 1)
+outline_size = 3
+outline_color = Color(0, 0, 0, 1)
+
+[node name="Player" type="CharacterBody3D"]
+floor_snap_length = 0.3
+script = ExtResource("1_player")
+footstep_sounds = Array[AudioStream]([ExtResource("2_fs1"), ExtResource("3_fs2"), ExtResource("4_fs3"), ExtResource("5_fs4")])
+flashlight_click = ExtResource("6_click")
+breathing_loop = ExtResource("7_breath")
+heartbeat_loop = ExtResource("8_heart")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.63, 0)
+
+[node name="Camera" type="Camera3D" parent="Head"]
+current = true
+fov = 72.0
+near = 0.05
+
+[node name="InteractRay" type="RayCast3D" parent="Head/Camera"]
+target_position = Vector3(0, 0, -2.2)
+
+[node name="FlashlightPivot" type="Node3D" parent="."]
+
+[node name="Flashlight" type="SpotLight3D" parent="FlashlightPivot"]
+light_color = Color(1, 0.92, 0.78, 1)
+light_energy = 3.2
+light_volumetric_fog_energy = 1.4
+shadow_enabled = true
+shadow_bias = 0.05
+spot_range = 18.0
+spot_attenuation = 1.1
+spot_angle = 24.0
+spot_angle_attenuation = 1.6
+
+[node name="FootstepPlayer" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+
+[node name="BreathPlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -60.0
+
+[node name="HeartPlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -60.0
+
+[node name="PostFX" type="CanvasLayer" parent="."]
+script = ExtResource("9_postfx")
+
+[node name="Screen" type="ColorRect" parent="PostFX"]
+material = SubResource("ShaderMaterial_post")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 2
+script = ExtResource("11_hud")
+
+[node name="Crosshair" type="ColorRect" parent="HUD"]
+modulate = Color(1, 1, 1, 0.35)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1.0
+offset_top = -1.0
+offset_right = 1.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.9, 0.88, 0.8, 1)
+
+[node name="Subtitle" type="Label" parent="HUD"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -90.0
+offset_right = 260.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 0
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Prompt" type="Label" parent="HUD"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -150.0
+offset_right = 160.0
+offset_bottom = -130.0
+grow_horizontal = 2
+grow_vertical = 0
+label_settings = SubResource("LabelSettings_small")
+horizontal_alignment = 1
+
+[node name="Battery" type="Label" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = -28.0
+offset_right = 160.0
+offset_bottom = -10.0
+grow_vertical = 0
+label_settings = SubResource("LabelSettings_small")
+text = "BATERIA 100%"
+
+[node name="Fade" type="ColorRect" parent="HUD"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="PausePanel" type="ColorRect" parent="HUD"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="Text" type="Label" parent="HUD/PausePanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "PAUSADO
+
+Esc — continuar
+F11 — tela cheia
+Q — sair"
+label_settings = SubResource("LabelSettings_pause")
+horizontal_alignment = 1
+vertical_alignment = 1

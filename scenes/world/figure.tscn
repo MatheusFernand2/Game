@@ -1,0 +1,91 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/figure.gd" id="1_figure"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_skin"]
+albedo_color = Color(0.03, 0.03, 0.03, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_eye"]
+shading_mode = 0
+albedo_color = Color(0.95, 0.93, 0.85, 1)
+
+[sub_resource type="CapsuleMesh" id="Mesh_torso"]
+material = SubResource("Mat_skin")
+radius = 0.16
+height = 0.95
+radial_segments = 8
+rings = 2
+
+[sub_resource type="CapsuleMesh" id="Mesh_leg"]
+material = SubResource("Mat_skin")
+radius = 0.06
+height = 1.05
+radial_segments = 6
+rings = 2
+
+[sub_resource type="CapsuleMesh" id="Mesh_arm"]
+material = SubResource("Mat_skin")
+radius = 0.045
+height = 1.2
+radial_segments = 6
+rings = 2
+
+[sub_resource type="SphereMesh" id="Mesh_head"]
+material = SubResource("Mat_skin")
+radius = 0.12
+height = 0.32
+radial_segments = 8
+rings = 6
+
+[sub_resource type="SphereMesh" id="Mesh_eye"]
+material = SubResource("Mat_eye")
+radius = 0.012
+height = 0.024
+radial_segments = 4
+rings = 2
+
+[node name="Figure" type="Node3D"]
+script = ExtResource("1_figure")
+
+[node name="Torso" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.985, 0.174, 0, -0.174, 0.985, 0, 1.45, 0)
+mesh = SubResource("Mesh_torso")
+
+[node name="LegL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.09, 0.52, 0)
+mesh = SubResource("Mesh_leg")
+
+[node name="LegR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.52, 0)
+mesh = SubResource("Mesh_leg")
+
+[node name="ArmL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99, 0.139, 0, -0.139, 0.99, 0, 0, 0, 1, -0.25, 1.28, -0.04)
+mesh = SubResource("Mesh_arm")
+
+[node name="ArmR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99, -0.139, 0, 0.139, 0.99, 0, 0, 0, 1, 0.25, 1.28, -0.04)
+mesh = SubResource("Mesh_arm")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.98, -0.08)
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("Mesh_head")
+
+[node name="EyeL" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.04, 0.17, -0.105)
+mesh = SubResource("Mesh_eye")
+
+[node name="EyeR" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.045, 0.165, -0.105)
+mesh = SubResource("Mesh_eye")
+
+[node name="RimLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, -0.45)
+visible = false
+light_color = Color(0.6, 0.7, 1, 1)
+light_energy = 1.4
+omni_range = 2.6
