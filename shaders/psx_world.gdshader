@@ -19,13 +19,15 @@ varying vec3 world_normal;
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	if (vertex_snap) {
-		vec4 clip = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
+	vec4 clip = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
+	// Só "treme" na câmera (projeção em perspectiva); sombras do sol ficam lisas.
+	bool perspective = PROJECTION_MATRIX[3][3] == 0.0;
+	if (vertex_snap && perspective && clip.w > 0.0001) {
 		vec2 ndc = clip.xy / clip.w;
 		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
 		clip.xy = ndc * clip.w;
-		POSITION = clip;
 	}
+	POSITION = clip;
 }
 
 void fragment() {

@@ -1,0 +1,71 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/eco_rig.gd" id="1_rig"]
+[ext_resource type="Script" path="res://scripts/world/fear_source.gd" id="2_fear"]
+[ext_resource type="Texture2D" path="res://assets/textures/door_wood.png" id="3_wood"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_chair"]
+albedo_texture = ExtResource("3_wood")
+albedo_color = Color(0.7, 0.62, 0.55, 1)
+roughness = 1.0
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="Mesh_seat"]
+material = SubResource("Mat_chair")
+size = Vector3(0.46, 0.05, 0.46)
+
+[sub_resource type="BoxMesh" id="Mesh_back"]
+material = SubResource("Mat_chair")
+size = Vector3(0.46, 0.55, 0.05)
+
+[sub_resource type="BoxMesh" id="Mesh_leg"]
+material = SubResource("Mat_chair")
+size = Vector3(0.04, 0.46, 0.04)
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(0.6, 1.3, 0.9)
+
+[node name="EcoSeated" type="Node3D"]
+
+[node name="Chair" type="Node3D" parent="."]
+
+[node name="Seat" type="MeshInstance3D" parent="Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0.05)
+mesh = SubResource("Mesh_seat")
+
+[node name="Back" type="MeshInstance3D" parent="Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76, 0.27)
+mesh = SubResource("Mesh_back")
+
+[node name="LegFL" type="MeshInstance3D" parent="Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.23, -0.15)
+mesh = SubResource("Mesh_leg")
+
+[node name="LegFR" type="MeshInstance3D" parent="Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.23, -0.15)
+mesh = SubResource("Mesh_leg")
+
+[node name="LegBL" type="MeshInstance3D" parent="Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.23, 0.25)
+mesh = SubResource("Mesh_leg")
+
+[node name="LegBR" type="MeshInstance3D" parent="Chair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.23, 0.25)
+mesh = SubResource("Mesh_leg")
+
+[node name="Rig" type="Node3D" parent="."]
+script = ExtResource("1_rig")
+pose = 1
+show_eyes = false
+
+[node name="Body" type="StaticBody3D" parent="."]
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, -0.1)
+shape = SubResource("Shape_body")
+
+[node name="FearSource" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, -0.2)
+script = ExtResource("2_fear")
+radius = 3.5
+fear_per_second = 0.45

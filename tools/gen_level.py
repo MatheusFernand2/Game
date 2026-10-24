@@ -138,6 +138,7 @@ script_id = ext_res("Script", "res://scripts/levels/test_house.gd")
 player_id = ext_res("PackedScene", "res://scenes/player/player.tscn")
 door_id = ext_res("PackedScene", "res://scenes/world/door.tscn")
 figure_id = ext_res("PackedScene", "res://scenes/world/figure.tscn")
+eco_seated_id = ext_res("PackedScene", "res://scenes/world/eco_seated.tscn")
 light_script = ext_res("Script", "res://scripts/world/flicker_light.gd")
 trigger_script = ext_res("Script", "res://scripts/world/scare_trigger.gd")
 pickup_script = ext_res("Script", "res://scripts/world/battery_pickup.gd")
@@ -190,6 +191,8 @@ triggers = {
     "KnockTrigger": ((0, 1, -7.6), (1.6, 2, 0.8)),
     "HallwayScare": ((0, 1, -10.4), (1.6, 2, 0.8)),
     "KitchenEnter": ((2.0, 1, -13.0), (0.8, 2, 1.6)),
+    # Área da cozinha inteira: o som some enquanto o jogador está aqui.
+    "KitchenSilence": ((3.0, 1, -13.0), (3.9, 2, 5.9)),
 }
 for name, (_, size) in triggers.items():
     sub.append(f'[sub_resource type="BoxShape3D" id="Shape_{name}"]\nsize = {v3(size)}\n')
@@ -229,6 +232,7 @@ lights = [
     ("BedLamp", (-0.25, 0.85, 3.7), (1.0, 0.6, 0.3), 0.6, 3.5, 1, False),
     ("HallLightA", (0, 2.3, -3.5), (1.0, 0.93, 0.72), 1.3, 6.0, 1, True),
     ("HallLightB", (0, 2.3, -11.2), (0.9, 0.95, 0.8), 1.0, 6.0, 0, True),
+    ("KitchenLight", (3.1, 2.3, -13.2), (0.95, 0.9, 0.75), 0.55, 4.0, 0, True),
 ]
 for name, p, col, energy, rng_, mode, shadow in lights:
     nodes.append(
@@ -260,6 +264,11 @@ for name, p, col, energy, rng_, mode, shadow in lights:
         )
 
 nodes.append(f'[node name="Figure" parent="." instance=ExtResource("{figure_id}")]\n')
+# O Eco sentado: ponta da mesa da cozinha, de frente pra porta, mão no rosto.
+nodes.append(
+    f'[node name="EcoSeated" parent="." instance=ExtResource("{eco_seated_id}")]\n'
+    f"transform = {xform((4.25, 0, -13.2), 90)}\n"
+)
 
 nodes.append('[node name="Markers" type="Node3D" parent="."]\n')
 nodes.append(f'[node name="FigureEndOfHall" type="Marker3D" parent="Markers"]\ntransform = {xform((0, 0, -13.6))}\n')

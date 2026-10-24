@@ -6,6 +6,7 @@ extends CharacterBody3D
 signal fear_changed(value: float)
 signal battery_changed(percent: float)
 signal interact_prompt_changed(text: String)
+signal watch_requested
 
 @export_group("Movimento")
 @export var walk_speed: float = 2.0
@@ -55,7 +56,22 @@ var flashlight_on := true
 ## Medo de 0 a 1. Sobe com sustos, desce sozinho com o tempo.
 var fear: float = 0.0
 ## Quando false, o jogador não se mexe nem olha (cutscenes, sustos travados).
-var controls_enabled := true
+var controls_enabled := true:
+	set(value):
+		controls_enabled = value
+		_controls_change_id += 1
+## Multiplica todas as velocidades (ex.: 0.6 mancando).
+var speed_multiplier := 1.0
+## Impede correr (perna machucada, por exemplo).
+var sprint_locked := false
+## 0..1 — balanço torto de quem está mancando.
+var limp_amount := 0.0
+## Altura forçada dos olhos (deitado, caído). Negativo = normal.
+var forced_eye_height := -1.0
+## Inclinação lateral da câmera em graus (caído no chão, tontura).
+var camera_roll_target := 0.0
+## Segundos seguidos correndo (usado pela trombada do Eco).
+var sprint_time := 0.0
 
 var _current_height: float
 var _bob_time := 0.0
@@ -68,6 +84,10 @@ var _current_interactable: Node = null
 var _last_prompt := ""
 var _pitch := 0.0
 var _rng := RandomNumberGenerator.new()
+var _eye_y := 1.63
+var _step_count := 0
+var _stunned := false
+var _controls_change_id := 0
 
 
 func _ready() -> void:
@@ -75,6 +95,7 @@ func _ready() -> void:
 	_rng.randomize()
 	stamina = stamina_max
 	_current_height = stand_height
+	_eye_y = stand_height - eye_offset
 	_base_fov = camera.fov
 	flashlight_pivot.top_level = true
 	interact_ray.add_exception(self)
@@ -109,6 +130,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("interact"):
 		if _current_interactable != null:
 			_current_interactable.call("interact", self)
+	elif event.is_action_pressed("watch"):
+		watch_requested.emit()
 
 
 func _physics_process(delta: float) -> void:
@@ -135,12 +158,13 @@ func _update_movement(delta: float) -> void:
 	var direction := (transform.basis * Vector3(input_dir.x, 0.0, input_dir.y)).normalized()
 
 	var wants_sprint := controls_enabled and Input.is_action_pressed("sprint") \
-		and input_dir.y < 0.0 and not is_crouching and not exhausted
+		and input_dir.y < 0.0 and not is_crouching and not exhausted and not sprint_locked
 	var target_speed := walk_speed
 	if is_crouching:
 		target_speed = crouch_speed
 	elif wants_sprint:
 		target_speed = sprint_speed
+	target_speed *= speed_multiplier
 
 	# Fôlego
 	if wants_sprint and direction != Vector3.ZERO:
@@ -163,6 +187,10 @@ func _update_movement(delta: float) -> void:
 
 	# Passos
 	var speed := Vector2(velocity.x, velocity.z).length()
+	if wants_sprint and speed > walk_speed + 0.5:
+		sprint_time += delta
+	else:
+		sprint_time = 0.0
 	if is_on_floor() and speed > 0.3:
 		_step_distance += speed * delta
 		var stride := 0.75
@@ -172,6 +200,7 @@ func _update_movement(delta: float) -> void:
 			stride = 0.95
 		if _step_distance >= stride:
 			_step_distance = 0.0
+			_step_count += 1
 			_play_footstep(speed)
 		_bob_time += delta * speed * 2.6
 	else:
@@ -232,9 +261,19 @@ func _update_camera_effects(delta: float) -> void:
 		shake_offset = Vector3(_rng.randf_range(-1, 1), _rng.randf_range(-1, 1), 0.0) * _shake_strength
 	shake_offset += Vector3(_rng.randf_range(-1, 1), _rng.randf_range(-1, 1), 0.0) * fear * 0.004
 
-	var eye_y := _current_height - eye_offset
-	head.position = Vector3(0.0, eye_y, 0.0)
+	# Mancando: um passo afunda mais que o outro.
+	if limp_amount > 0.0 and speed > 0.3:
+		var dip := absf(sin(_bob_time * 0.5)) if _step_count % 2 == 0 else 0.0
+		bob.y -= dip * 0.09 * limp_amount
+		bob.x += sin(_bob_time * 0.5) * 0.02 * limp_amount
+
+	var target_eye := _current_height - eye_offset
+	if forced_eye_height >= 0.0:
+		target_eye = forced_eye_height
+	_eye_y = lerpf(_eye_y, target_eye, clampf(6.0 * delta, 0.0, 1.0))
+	head.position = Vector3(0.0, _eye_y, 0.0)
 	camera.position = bob + shake_offset
+	camera.rotation_degrees.z = lerpf(camera.rotation_degrees.z, camera_roll_target, clampf(5.0 * delta, 0.0, 1.0))
 
 	# FOV fecha um pouco com medo (visão de túnel).
 	var target_fov := _base_fov - fear * 8.0
@@ -248,6 +287,81 @@ func _update_camera_effects(delta: float) -> void:
 	var current := flashlight_pivot.global_basis.get_rotation_quaternion()
 	var target_q := camera.global_basis.get_rotation_quaternion()
 	flashlight_pivot.global_basis = Basis(current.slerp(target_q, clampf(14.0 * delta, 0.0, 1.0)))
+
+
+## Coloca a câmera direto numa altura/inclinação (sem suavizar). Para cortes de cena.
+func snap_camera(eye_height: float, roll_deg: float) -> void:
+	_eye_y = eye_height
+	camera.rotation_degrees.z = roll_deg
+	head.position = Vector3(0.0, eye_height, 0.0)
+
+
+## Teleporta o jogador (checkpoints, cortes de cena).
+func teleport(target: Transform3D) -> void:
+	global_transform = target
+	velocity = Vector3.ZERO
+	_pitch = 0.0
+	head.rotation_degrees.x = 0.0
+
+
+## Vira o olhar do jogador (graus). Usado em cenas roteirizadas.
+func set_look(yaw_deg: float, pitch_deg: float) -> void:
+	rotation_degrees.y = yaw_deg
+	_pitch = clampf(pitch_deg, -85.0, 85.0)
+	head.rotation_degrees.x = _pitch
+
+
+## Direção pra onde a câmera olha.
+func view_forward() -> Vector3:
+	return -camera.global_basis.z
+
+
+func is_sprinting() -> bool:
+	return sprint_time > 0.0
+
+
+func is_stunned() -> bool:
+	return _stunned
+
+
+## Derruba o jogador por alguns segundos (trombada, agarrão).
+func stun(duration: float) -> void:
+	if _stunned:
+		return
+	_stunned = true
+	var had_controls := controls_enabled
+	controls_enabled = false
+	var my_change := _controls_change_id
+	velocity = Vector3.ZERO
+	forced_eye_height = 0.45
+	camera_roll_target = 28.0 if _rng.randf() < 0.5 else -28.0
+	shake(0.08, 0.5)
+	await get_tree().create_timer(duration, false).timeout
+	forced_eye_height = -1.0
+	camera_roll_target = 0.0
+	# Só devolve o controle se ninguém (uma cena) mexeu nele enquanto caído.
+	if _controls_change_id == my_change:
+		controls_enabled = had_controls
+	_stunned = false
+
+
+## true se o ponto está dentro do facho da lanterna (ligada) e sem nada na frente.
+func is_point_lit(point: Vector3, max_distance: float = -1.0) -> bool:
+	if not flashlight_on or flashlight.light_energy < flashlight_energy * 0.3:
+		return false
+	var origin := flashlight.global_position
+	var to_point := point - origin
+	var dist := to_point.length()
+	var reach := flashlight.spot_range if max_distance < 0.0 else max_distance
+	if dist > reach or dist < 0.01:
+		return false
+	var forward := -flashlight.global_basis.z
+	if rad_to_deg(forward.angle_to(to_point)) > flashlight.spot_angle:
+		return false
+	var query := PhysicsRayQueryParameters3D.create(origin, point)
+	query.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	return hit.is_empty() or origin.distance_to(hit["position"]) > dist - 0.6
 
 
 ## Treme a câmera. strength ~0.02 leve, ~0.08 forte.

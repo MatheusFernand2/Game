@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/name="Projeto Terror"
+config/name="Ecos"
 config/description="Jogo de terror em primeira pessoa."
-run/main_scene="res://scenes/levels/test_house.tscn"
+run/main_scene="res://scenes/menu/main_menu.tscn"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
 [autoload]

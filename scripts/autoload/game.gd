@@ -14,6 +14,18 @@ var master_volume: float = 0.4
 var mouse_sensitivity: float = 0.12
 var invert_y: bool = false
 
+const MENU_SCENE := "res://scenes/menu/main_menu.tscn"
+const ACT1_SCENE := "res://scenes/levels/act1_trilha.tscn"
+const TEST_HOUSE_SCENE := "res://scenes/levels/test_house.tscn"
+
+# ------------------------------------------------------------ estado da partida
+## Quantas trombadas de Eco já aconteceram (máximo 2 no jogo inteiro).
+var eco_bumps_done := 0
+## O relógio do protagonista parou na queda?
+var watch_stopped := false
+## Segundos de jogo desde o início da partida (pro relógio andar antes da queda).
+var play_time := 0.0
+
 # Ação -> lista de teclas (physical keycode) ou botões do mouse.
 const KEY_BINDINGS := {
 	"move_forward": [KEY_W, KEY_UP],
@@ -29,6 +41,7 @@ const KEY_BINDINGS := {
 	"toggle_fullscreen": [KEY_F11],
 	"volume_down": [KEY_MINUS, KEY_KP_SUBTRACT],
 	"volume_up": [KEY_EQUAL, KEY_KP_ADD],
+	"watch": [KEY_T],
 }
 
 const MOUSE_BINDINGS := {
@@ -79,6 +92,41 @@ func _unhandled_input(event: InputEvent) -> void:
 		quit_game()
 
 
+func _process(delta: float) -> void:
+	if not get_tree().paused:
+		play_time += delta
+
+
+## Começa uma partida nova do zero.
+func new_game() -> void:
+	eco_bumps_done = 0
+	watch_stopped = false
+	play_time = 0.0
+	go_to(ACT1_SCENE)
+
+
+## Troca de cena com a pausa desligada.
+func go_to(scene_path: String) -> void:
+	get_tree().paused = false
+	paused_changed.emit(false)
+	get_tree().change_scene_to_file(scene_path)
+
+
+func go_to_menu() -> void:
+	save_settings()
+	go_to(MENU_SCENE)
+
+
+## Hora que aparece no relógio de pulso. Antes da queda anda (rápido);
+## depois da queda fica parado em 03:17 pra sempre.
+func watch_text() -> String:
+	if watch_stopped:
+		return "03:17"
+	# 22:10 + 12 minutos de relógio por minuto de jogo, travado antes de 03:17.
+	var minutes := mini(22 * 60 + 10 + int(play_time / 5.0), 24 * 60 + 3 * 60 + 16)
+	return "%02d:%02d" % [floori(minutes / 60.0) % 24, minutes % 60]
+
+
 func quit_game() -> void:
 	save_settings()
 	get_tree().quit()
@@ -121,6 +169,9 @@ func save_settings() -> void:
 
 
 func set_paused(value: bool) -> void:
+	var scene := get_tree().current_scene
+	if scene != null and scene.is_in_group("no_pause"):
+		return
 	get_tree().paused = value
 	if value:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/dog.gd" id="1_dog"]
+[ext_resource type="AudioStream" path="res://assets/audio/dog_bark_1.wav" id="2_b1"]
+[ext_resource type="AudioStream" path="res://assets/audio/dog_bark_2.wav" id="3_b2"]
+[ext_resource type="AudioStream" path="res://assets/audio/dog_bark_3.wav" id="4_b3"]
+[ext_resource type="AudioStream" path="res://assets/audio/dog_whine.wav" id="5_whine"]
+
+[node name="Pacoca" type="Node3D"]
+script = ExtResource("1_dog")
+bark_sounds = Array[AudioStream]([ExtResource("2_b1"), ExtResource("3_b2"), ExtResource("4_b3")])
+whine_sound = ExtResource("5_whine")

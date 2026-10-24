@@ -5,6 +5,8 @@ extends Node3D
 ##   2. A Coisa aparece no fim do corredor, as luzes estouram e ela surge na sua cara.
 ##   3. A porta do quarto bate sozinha atrás de você.
 ## Depois disso, um "diretor de ambiente" solta sons aleatórios atrás do jogador.
+## Na cozinha: o Eco sentado, com a mão no rosto, do lado das pilhas.
+## Você tem que passar do lado dele pra pegar. Ele nunca reage.
 
 const SND_KNOCK := preload("res://assets/audio/knock_3x.wav")
 const SND_WHISPER := preload("res://assets/audio/whisper.wav")
@@ -24,6 +26,8 @@ const SND_STINGER := preload("res://assets/audio/stinger_scream.wav")
 
 var _scripted_scare_running := false
 var _director_enabled := false
+var _in_kitchen := false
+var _ambience_tween: Tween
 var _director_timer := 0.0
 var _rng := RandomNumberGenerator.new()
 
@@ -34,6 +38,9 @@ func _ready() -> void:
 	($Triggers/KnockTrigger as ScareTrigger).triggered.connect(_on_knock_trigger)
 	($Triggers/HallwayScare as ScareTrigger).triggered.connect(_on_hallway_scare)
 	($Triggers/KitchenEnter as ScareTrigger).triggered.connect(_on_kitchen_enter)
+	var kitchen := $Triggers/KitchenSilence as Area3D
+	kitchen.body_entered.connect(_on_kitchen_body_entered)
+	kitchen.body_exited.connect(_on_kitchen_body_exited)
 	_intro()
 
 
@@ -98,8 +105,8 @@ func _on_hallway_scare(_p: Player) -> void:
 	# 4) Silêncio... e a porta do quarto bate atrás.
 	await _wait(1.6)
 	hall_light_a.restore(0.35, FlickerLight.Mode.HEAVY)
-	var tw := create_tween()
-	tw.tween_property(ambience, "volume_db", -10.0, 6.0)
+	if not _in_kitchen:
+		_fade_ambience(-10.0, 6.0)
 	await _wait(1.2)
 	if bedroom_door.is_open:
 		bedroom_door.slam()
@@ -113,6 +120,26 @@ func _on_hallway_scare(_p: Player) -> void:
 	_scripted_scare_running = false
 	_director_enabled = true
 	_director_timer = _rng.randf_range(20.0, 35.0)
+
+
+## Cozinha: o som do mundo some. Sobra a lâmpada e a respiração.
+func _on_kitchen_body_entered(body: Node3D) -> void:
+	if body is Player:
+		_in_kitchen = true
+		_fade_ambience(-45.0, 1.2)
+
+
+func _on_kitchen_body_exited(body: Node3D) -> void:
+	if body is Player:
+		_in_kitchen = false
+		_fade_ambience(-10.0, 3.0)
+
+
+func _fade_ambience(target_db: float, duration: float) -> void:
+	if _ambience_tween and _ambience_tween.is_valid():
+		_ambience_tween.kill()
+	_ambience_tween = create_tween()
+	_ambience_tween.tween_property(ambience, "volume_db", target_db, duration)
 
 
 func _on_kitchen_enter(_p: Player) -> void:
@@ -137,7 +164,7 @@ func _free_distance(direction: Vector3, wanted: float) -> float:
 ## Toca sons aleatórios ATRÁS do jogador de tempos em tempos.
 ## É barato e funciona muito: o jogador nunca se sente sozinho.
 func _update_director(delta: float) -> void:
-	if not _director_enabled or _scripted_scare_running:
+	if not _director_enabled or _scripted_scare_running or _in_kitchen:
 		return
 	_director_timer -= delta
 	if _director_timer > 0.0:

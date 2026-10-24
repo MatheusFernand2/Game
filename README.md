@@ -1,17 +1,21 @@
-# Projeto Terror
+# Ecos
 
 Jogo de terror em primeira pessoa feito no **Godot 4** (4.4 ou mais novo).
-Sem combate: você só pode fugir, se esconder e torcer.
+Sem combate e sem morte: você só pode fugir, se esconder e torcer.
 
 Visual estilo PS1/VHS (baixa resolução, dithering, neblina, granulação),
 porque o que você não enxerga direito assusta mais.
+
+O roteiro completo está no documento "Roteiro — Ecos".
 
 ## Como abrir
 
 1. Abra o Godot.
 2. Clique em **Importar** e escolha o arquivo `project.godot` desta pasta.
 3. Espere ele importar os assets (só na primeira vez).
-4. Aperte **F5** pra jogar.
+4. Aperte **F5**. Abre o menu: **Novo jogo** (Ato 1) ou **Casa de teste**.
+
+A floresta é gerada quando a fase carrega, então o Ato 1 leva alguns segundos pra abrir.
 
 ## Controles
 
@@ -22,45 +26,73 @@ porque o que você não enxerga direito assusta mais.
 | Ctrl / C | Agachar |
 | E / clique esquerdo | Interagir (portas, itens) |
 | F / clique direito | Lanterna |
-| Esc | Pausar (volume e sensibilidade do mouse ficam aqui) |
+| T | Olhar o relógio |
+| Esc | Pausar (volume, sensibilidade, voltar ao menu) |
 | - / + | Abaixar / aumentar volume |
 | F11 | Tela cheia |
+
+## O que já dá pra jogar
+
+### Ato 1 — A Trilha (`scenes/levels/act1_trilha.tscn`)
+
+1. O sítio, à noite. O Paçoca late pro mato e foge pelo portão.
+2. A trilha. Alguma coisa anda no mato do seu lado e para quando você para.
+3. A casa de ferramentas: rastro de sangue e a coruja.
+4. O primeiro Eco, parado entre as árvores. Some se você apagar a lanterna.
+5. A perseguição. A Coisa Funda vem atrás; a luz da lanterna segura ela. Siga o latido.
+6. A queda no barranco.
+7. O despertar: lanterna falhando, perna doendo, relógio parado em 03:17.
+
+### Casa de teste (`scenes/levels/test_house.tscn`)
+
+Quarto, corredor e cozinha, pra testar sustos. Na cozinha está o **Eco sentado**:
+mão no rosto, do lado das pilhas. Você tem que passar do lado dele. Ele nunca reage.
 
 ## Estrutura
 
 ```
-assets/audio/      sons (provisórios, sintetizados por tools/gen_assets.py)
-assets/textures/   texturas (provisórias, geradas por tools/gen_assets.py)
-scenes/player/     jogador (câmera, lanterna, HUD, pós-processamento)
-scenes/world/      porta, a Coisa (monstro)
-scenes/levels/     fases
-scripts/           código de tudo acima
-shaders/           visual PS1 (mundo e pós-processamento)
-tools/             scripts Python que geram assets e a fase de teste
+assets/audio/        sons (provisórios, sintetizados pelos scripts em tools/)
+assets/textures/     texturas (provisórias, idem)
+scenes/menu/         menu principal
+scenes/player/       jogador (câmera, lanterna, HUD, pós-processamento)
+scenes/world/        porta, Eco sentado, Paçoca, Coisa Funda...
+scenes/levels/       fases
+scripts/systems/     trombada do Eco, barulho que te acompanha no mato
+scripts/world/       terreno, floresta, corpo dos Ecos, cachorro, monstro...
+shaders/             visual PS1 (mundo, terreno e pós-processamento)
+tools/               scripts Python que geram assets e as fases
 ```
-
-## Fase de teste (`test_house`)
-
-Quarto → corredor → cozinha. Serve pra calibrar o medo:
-
-1. Batidas atrás de uma porta trancada no corredor.
-2. A Coisa aparece no fim do corredor, as lâmpadas estouram e ela surge na sua cara.
-3. A porta do quarto bate sozinha atrás de você.
-4. Depois disso, sons aleatórios começam a tocar **atrás** de você.
 
 ## Sistemas prontos
 
-- Movimento com fôlego, agachar, balanço de câmera, passos com som
-- Lanterna com bateria, piscando quando fraca, seguindo a câmera com atraso
-- Sistema de **medo** (0–1): coração, respiração, visão de túnel, tremor, vinheta pulsando
-- Portas que abrem pro lado certo, rangem, trancam e **batem** sozinhas
-- Lâmpadas que piscam, chiam e estouram
-- Gatilhos de susto, glitch de VHS na tela, legendas de pensamento
-- "Diretor de ambiente" que toca sons atrás do jogador
+- Movimento com fôlego, agachar, passos com som (madeira e terra)
+- Lanterna com bateria, piscando quando fraca
+- Sistema de **medo**: coração, respiração, visão de túnel, tremor, vinheta pulsando
+- Medo por proximidade (chegar perto de um Eco já acelera o coração)
+- Terreno e floresta gerados por código (trilha, clareiras, barranco, ~1400 árvores, mato)
+- Corpo dos Ecos montado por código, com poses (em pé, sentado, correndo, de quatro)
+- Paçoca: corre na frente, espera você, late chamando
+- Coisa Funda: persegue pelo seu rastro, recua na luz, te derruba sem matar
+- Trombada do Eco (no máximo 2 vezes no jogo): você vira pra trás correndo e ele te atropela
+- Relógio de pulso que para na hora da queda
+- Portas, lâmpadas que piscam/estouram, gatilhos de susto, coruja, legendas
+- Menu principal e menu de pausa com volume e sensibilidade
+
+## Regerando as coisas
+
+```
+python tools/gen_assets.py          # sons e texturas da casa
+python tools/gen_forest_assets.py   # sons e texturas da floresta
+python tools/gen_level.py           # casa de teste
+python tools/gen_act1.py            # Ato 1
+```
+
+Precisa de Python com `numpy`, `scipy`, `pillow`. Regerar uma fase apaga o que for
+mudado nela à mão no editor, então depois de começar a editar no Godot, edite lá.
 
 ## Próximos passos
 
-- IA da Coisa: patrulha, ouve passos, caça o jogador
-- Esconderijos (armário, debaixo da cama)
-- Menu principal, opções (sensibilidade, volume), save
+- Esconder e prender a respiração
+- Ato 2 — A Floresta (as 4 áreas)
+- Save automático
 - Trocar sons/texturas provisórios por assets reais

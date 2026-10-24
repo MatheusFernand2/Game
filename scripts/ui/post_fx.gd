@@ -1,3 +1,4 @@
+class_name PostFX
 extends CanvasLayer
 ## Controla o shader de pós-processamento (PS1/VHS) da tela.
 
