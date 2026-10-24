@@ -123,7 +123,7 @@ def psx_mat(mid, tex, tint, tiles):
         f'shader_parameter/albedo_tex = ExtResource("{ext_res("Texture2D", tex)}")\n'
         f"shader_parameter/tint = Color({f(tint[0])}, {f(tint[1])}, {f(tint[2])}, 1)\n"
         f"shader_parameter/tiles_per_meter = {f(tiles)}\n"
-        f"shader_parameter/snap_resolution = Vector2(320, 180)\n"
+        f"shader_parameter/snap_resolution = Vector2(480, 270)\n"
         f"shader_parameter/vertex_snap = true\n"
     )
 
@@ -152,7 +152,41 @@ dog_scene = ext_res("PackedScene", "res://scenes/world/dog.tscn")
 coisa_scene = ext_res("PackedScene", "res://scenes/world/coisa_funda.tscn")
 terrain_shader = ext_res("Shader", "res://shaders/psx_terrain.gdshader")
 tex = {k: ext_res("Texture2D", f"res://assets/textures/{k}.png") for k in
-       ["forest_floor", "dirt_path", "bark", "foliage", "grass_tuft", "bush", "blood_decal"]}
+       ["dirt_path", "bark", "foliage", "grass_tuft", "bush", "blood_decal"]}
+tex["forest_floor"] = ext_res("Texture2D", "res://assets/textures/forest_ground.jpg")
+flee_script = ext_res("Script", "res://scripts/world/animal_flee.gd")
+deer_scene = ext_res("PackedScene", "res://assets/models/animals/Deer.gltf")
+
+
+def model(name):
+    return ext_res("PackedScene", f"res://assets/models/nature/{name}.gltf")
+
+
+# (modelo, peso, escala mín, escala máx, raio do tronco)
+TREES = (
+    [(f"Pine_{i}", 0.11, 0.9, 1.35, 0.28) for i in range(1, 6)]
+    + [(f"CommonTree_{i}", 0.05, 0.9, 1.25, 0.3) for i in range(1, 6)]
+    + [(f"DeadTree_{i}", 0.055, 0.5, 0.75, 0.32) for i in range(1, 6)]
+    + [(f"TwistedTree_{i}", 0.02, 0.45, 0.6, 0.45) for i in (1, 3, 5)]
+)
+# Bush_Common precisa ser o primeiro (vira os arbustos da beira do barranco).
+PLANTS = [("Bush_Common", 0.3, 0.7, 1.3), ("Fern_1", 0.3, 0.18, 0.3), ("Plant_1_Big", 0.14, 0.3, 0.55),
+          ("Plant_7_Big", 0.16, 0.6, 1.0), ("Mushroom_Common", 0.1, 0.4, 0.8)]
+GRASS = [("Grass_Wispy_Short", 0.5, 0.8), ("Grass_Wispy_Tall", 0.35, 0.6), ("Grass_Common_Tall", 0.4, 0.7)]
+ROCKS = [("Rock_Medium_1", 0.25, 0.8), ("Rock_Medium_2", 0.25, 0.8), ("Rock_Medium_3", 0.2, 0.7)]
+DEER = [(9.0, 60.0, 200.0), (-13.0, 24.0, 60.0)]
+
+
+def scenes_array(items):
+    return "Array[PackedScene]([" + ", ".join(f'ExtResource("{model(it[0])}")' for it in items) + "])"
+
+
+def floats(vals):
+    return "PackedFloat32Array(" + ", ".join(f(v) for v in vals) + ")"
+
+
+def vec2s(pairs):
+    return "PackedVector2Array(" + ", ".join(f"{f(a)}, {f(b)}" for a, b in pairs) + ")"
 snd = {k: ext_res("AudioStream", f"res://assets/audio/{k}.wav") for k in
        ["forest_night_loop", "bush_rustle", "branch_crack", "owl_screech", "wing_flaps",
         "impact_thud", "tinnitus", "light_buzz_loop", "bulb_pop", "dog_bark_1"]}
@@ -162,11 +196,11 @@ sub.append(
     f'shader = ExtResource("{terrain_shader}")\n'
     f'shader_parameter/floor_tex = ExtResource("{tex["forest_floor"]}")\n'
     f'shader_parameter/path_tex = ExtResource("{tex["dirt_path"]}")\n'
-    "shader_parameter/floor_tint = Color(0.9, 0.9, 0.9, 1)\n"
+    "shader_parameter/floor_tint = Color(0.72, 0.7, 0.66, 1)\n"
     "shader_parameter/path_tint = Color(0.85, 0.82, 0.78, 1)\n"
     "shader_parameter/cliff_tint = Color(0.6, 0.55, 0.5, 1)\n"
-    "shader_parameter/tiles_per_meter = 0.35\n"
-    "shader_parameter/snap_resolution = Vector2(320, 180)\n"
+    "shader_parameter/tiles_per_meter = 0.3\n"
+    "shader_parameter/snap_resolution = Vector2(480, 270)\n"
     "shader_parameter/vertex_snap = true\n"
 )
 psx_mat("Mat_house", "res://assets/textures/wood_floor.png", (0.62, 0.58, 0.52), 0.5)
@@ -225,7 +259,7 @@ node("WorldEnvironment", "WorldEnvironment", ".", {"environment": 'SubResource("
 node("Moon", "DirectionalLight3D", ".", {
     "transform": xform((0, 30, 0), 35, -58),
     "light_color": "Color(0.55, 0.62, 0.85, 1)",
-    "light_energy": "0.14",
+    "light_energy": "0.18",
     "light_volumetric_fog_energy": "0.6",
     "shadow_enabled": "true",
     "directional_shadow_max_distance": "60.0",
@@ -253,10 +287,27 @@ node("Forest", "Node3D", ".", {
     "script": f'ExtResource("{scatter_script}")',
     "terrain_path": 'NodePath("../Terrain")',
     "scatter_seed": "11",
-    "tree_count": "1400",
+    "tree_count": "950",
+    "tree_models": scenes_array(TREES),
+    "tree_model_weights": floats([t[1] for t in TREES]),
+    "tree_model_scales": vec2s([(t[2], t[3]) for t in TREES]),
+    "tree_model_trunks": floats([t[4] for t in TREES]),
+    "plant_models": scenes_array(PLANTS),
+    "plant_model_weights": floats([p[1] for p in PLANTS]),
+    "plant_model_scales": vec2s([(p[2], p[3]) for p in PLANTS]),
+    "plant_count": "2600",
+    "grass_models": scenes_array(GRASS),
+    "grass_model_scales": vec2s([(g[1], g[2]) for g in GRASS]),
+    "rock_models": scenes_array(ROCKS),
+    "rock_model_scales": vec2s([(r[1], r[2]) for r in ROCKS]),
+    "rock_count": "220",
+    "chunk_size": "48.0",
+    "tree_draw_distance": "95.0",
+    "plant_draw_distance": "72.0",
+    "grass_draw_distance": "60.0",
     "exclusion_segments": f"PackedVector2Array({ex})",
     "exclusion_radius": "2.6",
-    "grass_count": "9000",
+    "grass_count": "7000",
     "bush_count": "700",
     "bark_texture": f'ExtResource("{tex["bark"]}")',
     "foliage_texture": f'ExtResource("{tex["foliage"]}")',
@@ -365,6 +416,15 @@ node("BarkBeyond", "AudioStreamPlayer3D", ".", {
     "unit_size": "12.0",
     "max_distance": "150.0",
 }, groups=["snap_ground"], meta={"ground_offset": "1.0"})
+
+# --- Bichos que fogem de você (pista do plot twist)
+for i, (x, z, yaw) in enumerate(DEER):
+    node(f"Deer{i}", "Node3D", ".", {
+        "transform": xform((x, 0, z), yaw),
+        "script": f'ExtResource("{flee_script}")',
+        "model_scene": f'ExtResource("{deer_scene}")',
+        "flee_sound": f'ExtResource("{snd["branch_crack"]}")',
+    }, groups=["snap_ground"])
 
 # --- Marcadores
 node("Markers", "Node3D", ".")

@@ -185,7 +185,7 @@ func _make_slider(min_value: float, max_value: float, step: float, value: float)
 	slider.max_value = max_value
 	slider.step = step
 	slider.value = value
-	slider.custom_minimum_size = Vector2(220, 16)
+	slider.custom_minimum_size = Vector2(330, 24)
 	return slider
 
 
@@ -198,11 +198,11 @@ func _build_pause_menu() -> void:
 	box.add_theme_constant_override("separation", 6)
 	center.add_child(box)
 
-	box.add_child(_make_label("PAUSADO", 18))
+	box.add_child(_make_label("PAUSADO", 27))
 	box.add_child(Control.new())  # espaço
 
 	# Volume
-	_volume_label = _make_label("", 11)
+	_volume_label = _make_label("", 16)
 	box.add_child(_volume_label)
 	_volume_slider = _make_slider(0.0, 100.0, 1.0, Game.master_volume * 100.0)
 	_volume_slider.value_changed.connect(func(v: float) -> void: Game.set_master_volume(v / 100.0))
@@ -210,7 +210,7 @@ func _build_pause_menu() -> void:
 	_update_volume_text(Game.master_volume)
 
 	# Sensibilidade do mouse
-	_sens_label = _make_label("", 11)
+	_sens_label = _make_label("", 16)
 	box.add_child(_sens_label)
 	var sens := _make_slider(0.02, 0.4, 0.01, Game.mouse_sensitivity)
 	sens.value_changed.connect(_on_sensitivity_changed)
@@ -234,7 +234,7 @@ func _build_pause_menu() -> void:
 	quit.pressed.connect(Game.quit_game)
 	box.add_child(quit)
 
-	box.add_child(_make_label("Atalhos:  - / + volume   T relógio   F11 tela cheia", 9))
+	box.add_child(_make_label("Atalhos:  - / + volume   T relógio   F11 tela cheia", 13))
 
 
 func _on_sensitivity_changed(value: float) -> void:
@@ -243,56 +243,56 @@ func _on_sensitivity_changed(value: float) -> void:
 
 
 func _build_volume_toast() -> void:
-	_volume_toast = _make_label("", 11)
+	_volume_toast = _make_label("", 16)
 	_volume_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_volume_toast.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_volume_toast.offset_left = -150.0
-	_volume_toast.offset_right = -12.0
-	_volume_toast.offset_top = 10.0
-	_volume_toast.offset_bottom = 28.0
+	_volume_toast.offset_left = -240.0
+	_volume_toast.offset_right = -18.0
+	_volume_toast.offset_top = 14.0
+	_volume_toast.offset_bottom = 40.0
 	_volume_toast.modulate.a = 0.0
 	add_child(_volume_toast)
 
 
 func _build_extra_labels() -> void:
-	_watch_label = _make_label("", 12)
+	_watch_label = _make_label("", 18)
 	_watch_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_watch_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	_watch_label.offset_left = 14.0
-	_watch_label.offset_right = 160.0
-	_watch_label.offset_top = -52.0
-	_watch_label.offset_bottom = -32.0
+	_watch_label.offset_left = 20.0
+	_watch_label.offset_right = 240.0
+	_watch_label.offset_top = -76.0
+	_watch_label.offset_bottom = -46.0
 	_watch_label.modulate.a = 0.0
 	add_child(_watch_label)
 	move_child(_watch_label, fade_rect.get_index())
 
-	_hint_label = _make_label("", 10)
+	_hint_label = _make_label("", 15)
 	_hint_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_hint_label.offset_left = -220.0
-	_hint_label.offset_right = 220.0
-	_hint_label.offset_top = 16.0
-	_hint_label.offset_bottom = 34.0
+	_hint_label.offset_left = -330.0
+	_hint_label.offset_right = 330.0
+	_hint_label.offset_top = 24.0
+	_hint_label.offset_bottom = 50.0
 	_hint_label.modulate.a = 0.0
 	add_child(_hint_label)
 	move_child(_hint_label, fade_rect.get_index())
 
 	# Cartões ficam POR CIMA do preto (aparecem no fim de ato).
-	_card_title = _make_label("", 22)
+	_card_title = _make_label("", 34)
 	_card_title.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_card_title.offset_left = -300.0
-	_card_title.offset_right = 300.0
-	_card_title.offset_top = -30.0
+	_card_title.offset_left = -450.0
+	_card_title.offset_right = 450.0
+	_card_title.offset_top = -46.0
 	_card_title.offset_bottom = 0.0
 	_card_title.modulate.a = 0.0
 	add_child(_card_title)
 	move_child(_card_title, pause_panel.get_index())
 
-	_card_sub = _make_label("", 11)
+	_card_sub = _make_label("", 16)
 	_card_sub.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_card_sub.offset_left = -300.0
-	_card_sub.offset_right = 300.0
-	_card_sub.offset_top = 6.0
-	_card_sub.offset_bottom = 26.0
+	_card_sub.offset_left = -450.0
+	_card_sub.offset_right = 450.0
+	_card_sub.offset_top = 10.0
+	_card_sub.offset_bottom = 40.0
 	_card_sub.modulate.a = 0.0
 	add_child(_card_sub)
 	move_child(_card_sub, pause_panel.get_index())

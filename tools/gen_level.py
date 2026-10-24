@@ -130,7 +130,7 @@ for key, (tex, tint, tiles) in MATERIALS.items():
         f'shader_parameter/albedo_tex = ExtResource("{tex_id}")\n'
         f"shader_parameter/tint = Color({f(tint[0])}, {f(tint[1])}, {f(tint[2])}, 1)\n"
         f"shader_parameter/tiles_per_meter = {f(tiles)}\n"
-        f"shader_parameter/snap_resolution = Vector2(320, 180)\n"
+        f"shader_parameter/snap_resolution = Vector2(480, 270)\n"
         f"shader_parameter/vertex_snap = true\n"
     )
 

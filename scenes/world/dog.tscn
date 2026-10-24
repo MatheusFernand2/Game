@@ -5,8 +5,11 @@
 [ext_resource type="AudioStream" path="res://assets/audio/dog_bark_2.wav" id="3_b2"]
 [ext_resource type="AudioStream" path="res://assets/audio/dog_bark_3.wav" id="4_b3"]
 [ext_resource type="AudioStream" path="res://assets/audio/dog_whine.wav" id="5_whine"]
+[ext_resource type="PackedScene" path="res://assets/models/animals/ShibaInu.gltf" id="6_shiba"]
 
 [node name="Pacoca" type="Node3D"]
 script = ExtResource("1_dog")
 bark_sounds = Array[AudioStream]([ExtResource("2_b1"), ExtResource("3_b2"), ExtResource("4_b3")])
 whine_sound = ExtResource("5_whine")
+model_scene = ExtResource("6_shiba")
+model_scale = 0.18

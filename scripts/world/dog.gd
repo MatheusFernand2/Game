@@ -17,8 +17,19 @@ signal lead_finished
 @export var walk_speed: float = 1.6
 @export var bark_sounds: Array[AudioStream] = []
 @export var whine_sound: AudioStream
+## Modelo 3D animado (ex.: ShibaInu.gltf). Sem ele, usa o corpo feito por código.
+@export var model_scene: PackedScene:
+	set(value):
+		model_scene = value
+		if is_node_ready():
+			_build()
+@export var model_scale: float = 0.18
+## Cabeça baixa / triste (usado no final).
+@export var sad := false
 
 var _parts := {}
+var _model: Node3D
+var _anim: AnimationPlayer
 var _target := Vector3.ZERO
 var _moving := false
 var _speed := 0.0
@@ -176,6 +187,9 @@ func _ground_height(p: Vector3) -> float:
 # ------------------------------------------------------------ corpo
 
 func _animate(delta: float) -> void:
+	if _model:
+		_animate_model()
+		return
 	var moving := _moving
 	_gait += delta * (14.0 if moving and _speed > 3.0 else 7.0) * (1.0 if moving else 0.0)
 	var swing := sin(_gait) * (0.75 if _speed > 3.0 else 0.4) if moving else 0.0
@@ -193,12 +207,36 @@ func _animate(delta: float) -> void:
 		body.position.y = 0.42 + (absf(sin(_gait)) * 0.04 if moving else 0.0)
 
 
+func _animate_model() -> void:
+	if _moving and _speed > 3.0:
+		ModelUtil.play(_anim, "Gallop", 0.2, clampf(_speed / run_speed, 0.6, 1.4))
+	elif _moving:
+		ModelUtil.play(_anim, "Walk", 0.25, clampf(_speed / 1.6, 0.6, 1.4))
+	elif sad:
+		ModelUtil.play(_anim, "Idle_2_HeadLow", 0.5)
+	else:
+		ModelUtil.play(_anim, "Idle", 0.4)
+
+
 func _build() -> void:
 	for child in get_children():
 		if child.has_meta("dog_part"):
 			remove_child(child)
 			child.queue_free()
 	_parts.clear()
+	_model = null
+	_anim = null
+	if model_scene:
+		_model = model_scene.instantiate() as Node3D
+		_model.set_meta("dog_part", true)
+		# O modelo olha pra +Z; o jogo usa -Z como frente.
+		_model.rotation.y = PI
+		_model.scale = Vector3.ONE * model_scale
+		add_child(_model)
+		_anim = ModelUtil.find_animation_player(_model)
+		ModelUtil.set_loops(_anim, PackedStringArray(["Walk", "Gallop", "Idle", "Idle_2", "Idle_2_HeadLow", "Eating"]))
+		ModelUtil.play(_anim, "Idle", 0.0)
+		return
 	var coat := StandardMaterial3D.new()
 	coat.albedo_color = coat_color
 	coat.roughness = 1.0

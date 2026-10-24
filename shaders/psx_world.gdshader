@@ -10,7 +10,7 @@ uniform vec4 tint : source_color = vec4(1.0);
 // Quantas repetições da textura por metro.
 uniform float tiles_per_meter = 0.5;
 // Resolução do snap de vértice (menor = mais tremido).
-uniform vec2 snap_resolution = vec2(320.0, 180.0);
+uniform vec2 snap_resolution = vec2(480.0, 270.0);
 uniform bool vertex_snap = true;
 
 varying vec3 world_pos;

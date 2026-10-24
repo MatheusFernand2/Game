@@ -209,6 +209,8 @@ func _start_eco_sighting() -> void:
 	_eco_light_was_off = not player.flashlight_on
 	eco_sight.visible = true
 	eco_sight.head_twitch = true
+	eco_sight.idle_sway = true
+	eco_sight.look_target = player
 	var target := player.global_position
 	target.y = eco_sight.global_position.y
 	eco_sight.look_at(target, Vector3.UP)
@@ -242,6 +244,7 @@ func _update_eco_sighting(delta: float) -> void:
 		_eco_active = false
 		eco_sight.visible = false
 		eco_sight.head_twitch = false
+		eco_sight.look_target = null
 		_after_eco_vanish()
 
 

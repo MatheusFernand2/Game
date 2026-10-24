@@ -13,77 +13,108 @@
 [ext_resource type="PackedScene" path="res://scenes/world/dog.tscn" id="11_dog"]
 [ext_resource type="PackedScene" path="res://scenes/world/coisa_funda.tscn" id="12_coisa_funda"]
 [ext_resource type="Shader" path="res://shaders/psx_terrain.gdshader" id="13_psx_terrain"]
-[ext_resource type="Texture2D" path="res://assets/textures/forest_floor.png" id="14_forest_floor"]
-[ext_resource type="Texture2D" path="res://assets/textures/dirt_path.png" id="15_dirt_path"]
-[ext_resource type="Texture2D" path="res://assets/textures/bark.png" id="16_bark"]
-[ext_resource type="Texture2D" path="res://assets/textures/foliage.png" id="17_foliage"]
-[ext_resource type="Texture2D" path="res://assets/textures/grass_tuft.png" id="18_grass_tuft"]
-[ext_resource type="Texture2D" path="res://assets/textures/bush.png" id="19_bush"]
-[ext_resource type="Texture2D" path="res://assets/textures/blood_decal.png" id="20_blood_decal"]
-[ext_resource type="AudioStream" path="res://assets/audio/forest_night_loop.wav" id="21_forest_night_loop"]
-[ext_resource type="AudioStream" path="res://assets/audio/bush_rustle.wav" id="22_bush_rustle"]
-[ext_resource type="AudioStream" path="res://assets/audio/branch_crack.wav" id="23_branch_crack"]
-[ext_resource type="AudioStream" path="res://assets/audio/owl_screech.wav" id="24_owl_screech"]
-[ext_resource type="AudioStream" path="res://assets/audio/wing_flaps.wav" id="25_wing_flaps"]
-[ext_resource type="AudioStream" path="res://assets/audio/impact_thud.wav" id="26_impact_thud"]
-[ext_resource type="AudioStream" path="res://assets/audio/tinnitus.wav" id="27_tinnitus"]
-[ext_resource type="AudioStream" path="res://assets/audio/light_buzz_loop.wav" id="28_light_buzz_loop"]
-[ext_resource type="AudioStream" path="res://assets/audio/bulb_pop.wav" id="29_bulb_pop"]
-[ext_resource type="AudioStream" path="res://assets/audio/dog_bark_1.wav" id="30_dog_bark_1"]
-[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="31_psx_world"]
-[ext_resource type="Texture2D" path="res://assets/textures/wood_floor.png" id="32_wood_floor"]
-[ext_resource type="Texture2D" path="res://assets/textures/concrete.png" id="33_concrete"]
-[ext_resource type="Texture2D" path="res://assets/textures/door_wood.png" id="34_door_wood"]
+[ext_resource type="Texture2D" path="res://assets/textures/dirt_path.png" id="14_dirt_path"]
+[ext_resource type="Texture2D" path="res://assets/textures/bark.png" id="15_bark"]
+[ext_resource type="Texture2D" path="res://assets/textures/foliage.png" id="16_foliage"]
+[ext_resource type="Texture2D" path="res://assets/textures/grass_tuft.png" id="17_grass_tuft"]
+[ext_resource type="Texture2D" path="res://assets/textures/bush.png" id="18_bush"]
+[ext_resource type="Texture2D" path="res://assets/textures/blood_decal.png" id="19_blood_decal"]
+[ext_resource type="Texture2D" path="res://assets/textures/forest_ground.jpg" id="20_forest_ground"]
+[ext_resource type="Script" path="res://scripts/world/animal_flee.gd" id="21_animal_flee"]
+[ext_resource type="PackedScene" path="res://assets/models/animals/Deer.gltf" id="22_Deer"]
+[ext_resource type="AudioStream" path="res://assets/audio/forest_night_loop.wav" id="23_forest_night_loop"]
+[ext_resource type="AudioStream" path="res://assets/audio/bush_rustle.wav" id="24_bush_rustle"]
+[ext_resource type="AudioStream" path="res://assets/audio/branch_crack.wav" id="25_branch_crack"]
+[ext_resource type="AudioStream" path="res://assets/audio/owl_screech.wav" id="26_owl_screech"]
+[ext_resource type="AudioStream" path="res://assets/audio/wing_flaps.wav" id="27_wing_flaps"]
+[ext_resource type="AudioStream" path="res://assets/audio/impact_thud.wav" id="28_impact_thud"]
+[ext_resource type="AudioStream" path="res://assets/audio/tinnitus.wav" id="29_tinnitus"]
+[ext_resource type="AudioStream" path="res://assets/audio/light_buzz_loop.wav" id="30_light_buzz_loop"]
+[ext_resource type="AudioStream" path="res://assets/audio/bulb_pop.wav" id="31_bulb_pop"]
+[ext_resource type="AudioStream" path="res://assets/audio/dog_bark_1.wav" id="32_dog_bark_1"]
+[ext_resource type="Shader" path="res://shaders/psx_world.gdshader" id="33_psx_world"]
+[ext_resource type="Texture2D" path="res://assets/textures/wood_floor.png" id="34_wood_floor"]
+[ext_resource type="Texture2D" path="res://assets/textures/concrete.png" id="35_concrete"]
+[ext_resource type="Texture2D" path="res://assets/textures/door_wood.png" id="36_door_wood"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Pine_1.gltf" id="37_Pine_1"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Pine_2.gltf" id="38_Pine_2"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Pine_3.gltf" id="39_Pine_3"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Pine_4.gltf" id="40_Pine_4"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Pine_5.gltf" id="41_Pine_5"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/CommonTree_1.gltf" id="42_CommonTree_1"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/CommonTree_2.gltf" id="43_CommonTree_2"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/CommonTree_3.gltf" id="44_CommonTree_3"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/CommonTree_4.gltf" id="45_CommonTree_4"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/CommonTree_5.gltf" id="46_CommonTree_5"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/DeadTree_1.gltf" id="47_DeadTree_1"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/DeadTree_2.gltf" id="48_DeadTree_2"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/DeadTree_3.gltf" id="49_DeadTree_3"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/DeadTree_4.gltf" id="50_DeadTree_4"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/DeadTree_5.gltf" id="51_DeadTree_5"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/TwistedTree_1.gltf" id="52_TwistedTree_1"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/TwistedTree_3.gltf" id="53_TwistedTree_3"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/TwistedTree_5.gltf" id="54_TwistedTree_5"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Bush_Common.gltf" id="55_Bush_Common"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Fern_1.gltf" id="56_Fern_1"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Plant_1_Big.gltf" id="57_Plant_1_Big"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Plant_7_Big.gltf" id="58_Plant_7_Big"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Mushroom_Common.gltf" id="59_Mushroom_Common"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Grass_Wispy_Short.gltf" id="60_Grass_Wispy_Short"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Grass_Wispy_Tall.gltf" id="61_Grass_Wispy_Tall"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Grass_Common_Tall.gltf" id="62_Grass_Common_Tall"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Rock_Medium_1.gltf" id="63_Rock_Medium_1"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Rock_Medium_2.gltf" id="64_Rock_Medium_2"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/Rock_Medium_3.gltf" id="65_Rock_Medium_3"]
 
 [sub_resource type="ShaderMaterial" id="Mat_terrain"]
 shader = ExtResource("13_psx_terrain")
-shader_parameter/floor_tex = ExtResource("14_forest_floor")
-shader_parameter/path_tex = ExtResource("15_dirt_path")
-shader_parameter/floor_tint = Color(0.9, 0.9, 0.9, 1)
+shader_parameter/floor_tex = ExtResource("20_forest_ground")
+shader_parameter/path_tex = ExtResource("14_dirt_path")
+shader_parameter/floor_tint = Color(0.72, 0.7, 0.66, 1)
 shader_parameter/path_tint = Color(0.85, 0.82, 0.78, 1)
 shader_parameter/cliff_tint = Color(0.6, 0.55, 0.5, 1)
-shader_parameter/tiles_per_meter = 0.35
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/tiles_per_meter = 0.3
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_house"]
-shader = ExtResource("31_psx_world")
-shader_parameter/albedo_tex = ExtResource("32_wood_floor")
+shader = ExtResource("33_psx_world")
+shader_parameter/albedo_tex = ExtResource("34_wood_floor")
 shader_parameter/tint = Color(0.62, 0.58, 0.52, 1)
 shader_parameter/tiles_per_meter = 0.5
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_roof"]
-shader = ExtResource("31_psx_world")
-shader_parameter/albedo_tex = ExtResource("33_concrete")
+shader = ExtResource("33_psx_world")
+shader_parameter/albedo_tex = ExtResource("35_concrete")
 shader_parameter/tint = Color(0.32, 0.3, 0.28, 1)
 shader_parameter/tiles_per_meter = 0.4
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_fence"]
-shader = ExtResource("31_psx_world")
-shader_parameter/albedo_tex = ExtResource("34_door_wood")
+shader = ExtResource("33_psx_world")
+shader_parameter/albedo_tex = ExtResource("36_door_wood")
 shader_parameter/tint = Color(0.6, 0.55, 0.5, 1)
 shader_parameter/tiles_per_meter = 0.8
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_shed"]
-shader = ExtResource("31_psx_world")
-shader_parameter/albedo_tex = ExtResource("32_wood_floor")
+shader = ExtResource("33_psx_world")
+shader_parameter/albedo_tex = ExtResource("34_wood_floor")
 shader_parameter/tint = Color(0.45, 0.4, 0.36, 1)
 shader_parameter/tiles_per_meter = 0.6
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_door"]
-shader = ExtResource("31_psx_world")
-shader_parameter/albedo_tex = ExtResource("34_door_wood")
+shader = ExtResource("33_psx_world")
+shader_parameter/albedo_tex = ExtResource("36_door_wood")
 shader_parameter/tint = Color(0.7, 0.65, 0.6, 1)
 shader_parameter/tiles_per_meter = 1
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="StandardMaterial3D" id="Mat_window"]
@@ -94,7 +125,7 @@ emission_energy_multiplier = 1.6
 
 [sub_resource type="StandardMaterial3D" id="Mat_blood"]
 transparency = 1
-albedo_texture = ExtResource("20_blood_decal")
+albedo_texture = ExtResource("19_blood_decal")
 texture_filter = 0
 
 [sub_resource type="QuadMesh" id="Mesh_blood"]
@@ -172,13 +203,13 @@ environment = SubResource("Env")
 [node name="Moon" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.81915, -0.48642, 0.30395, 0, 0.52992, 0.84805, -0.57358, -0.69468, 0.43408, 0, 30, 0)
 light_color = Color(0.55, 0.62, 0.85, 1)
-light_energy = 0.14
+light_energy = 0.18
 light_volumetric_fog_energy = 0.6
 shadow_enabled = true
 directional_shadow_max_distance = 60.0
 
 [node name="Ambience" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("21_forest_night_loop")
+stream = ExtResource("23_forest_night_loop")
 volume_db = -12.0
 
 [node name="Terrain" type="Node3D" parent="."]
@@ -198,15 +229,32 @@ material = SubResource("Mat_terrain")
 script = ExtResource("3_forest_scatter")
 terrain_path = NodePath("../Terrain")
 scatter_seed = 11
-tree_count = 1400
+tree_count = 950
+tree_models = Array[PackedScene]([ExtResource("37_Pine_1"), ExtResource("38_Pine_2"), ExtResource("39_Pine_3"), ExtResource("40_Pine_4"), ExtResource("41_Pine_5"), ExtResource("42_CommonTree_1"), ExtResource("43_CommonTree_2"), ExtResource("44_CommonTree_3"), ExtResource("45_CommonTree_4"), ExtResource("46_CommonTree_5"), ExtResource("47_DeadTree_1"), ExtResource("48_DeadTree_2"), ExtResource("49_DeadTree_3"), ExtResource("50_DeadTree_4"), ExtResource("51_DeadTree_5"), ExtResource("52_TwistedTree_1"), ExtResource("53_TwistedTree_3"), ExtResource("54_TwistedTree_5")])
+tree_model_weights = PackedFloat32Array(0.11, 0.11, 0.11, 0.11, 0.11, 0.05, 0.05, 0.05, 0.05, 0.05, 0.055, 0.055, 0.055, 0.055, 0.055, 0.02, 0.02, 0.02)
+tree_model_scales = PackedVector2Array(0.9, 1.35, 0.9, 1.35, 0.9, 1.35, 0.9, 1.35, 0.9, 1.35, 0.9, 1.25, 0.9, 1.25, 0.9, 1.25, 0.9, 1.25, 0.9, 1.25, 0.5, 0.75, 0.5, 0.75, 0.5, 0.75, 0.5, 0.75, 0.5, 0.75, 0.45, 0.6, 0.45, 0.6, 0.45, 0.6)
+tree_model_trunks = PackedFloat32Array(0.28, 0.28, 0.28, 0.28, 0.28, 0.3, 0.3, 0.3, 0.3, 0.3, 0.32, 0.32, 0.32, 0.32, 0.32, 0.45, 0.45, 0.45)
+plant_models = Array[PackedScene]([ExtResource("55_Bush_Common"), ExtResource("56_Fern_1"), ExtResource("57_Plant_1_Big"), ExtResource("58_Plant_7_Big"), ExtResource("59_Mushroom_Common")])
+plant_model_weights = PackedFloat32Array(0.3, 0.3, 0.14, 0.16, 0.1)
+plant_model_scales = PackedVector2Array(0.7, 1.3, 0.18, 0.3, 0.3, 0.55, 0.6, 1, 0.4, 0.8)
+plant_count = 2600
+grass_models = Array[PackedScene]([ExtResource("60_Grass_Wispy_Short"), ExtResource("61_Grass_Wispy_Tall"), ExtResource("62_Grass_Common_Tall")])
+grass_model_scales = PackedVector2Array(0.5, 0.8, 0.35, 0.6, 0.4, 0.7)
+rock_models = Array[PackedScene]([ExtResource("63_Rock_Medium_1"), ExtResource("64_Rock_Medium_2"), ExtResource("65_Rock_Medium_3")])
+rock_model_scales = PackedVector2Array(0.25, 0.8, 0.25, 0.8, 0.2, 0.7)
+rock_count = 220
+chunk_size = 48.0
+tree_draw_distance = 95.0
+plant_draw_distance = 72.0
+grass_draw_distance = 60.0
 exclusion_segments = PackedVector2Array(9, 7, 25, 2)
 exclusion_radius = 2.6
-grass_count = 9000
+grass_count = 7000
 bush_count = 700
-bark_texture = ExtResource("16_bark")
-foliage_texture = ExtResource("17_foliage")
-grass_texture = ExtResource("18_grass_tuft")
-bush_texture = ExtResource("19_bush")
+bark_texture = ExtResource("15_bark")
+foliage_texture = ExtResource("16_foliage")
+grass_texture = ExtResource("17_grass_tuft")
+bush_texture = ExtResource("18_bush")
 
 [node name="Bounds" type="StaticBody3D" parent="."]
 
@@ -274,9 +322,9 @@ omni_attenuation = 1.3
 script = ExtResource("6_flicker_light")
 base_energy = 1.5
 mode = 1
-buzz_sound = ExtResource("28_light_buzz_loop")
+buzz_sound = ExtResource("30_light_buzz_loop")
 buzz_volume_db = -22.0
-pop_sound = ExtResource("29_bulb_pop")
+pop_sound = ExtResource("31_bulb_pop")
 
 [node name="Bulb" type="MeshInstance3D" parent="Sitio/PorchLight"]
 mesh = SubResource("Mesh_bulb")
@@ -462,8 +510,8 @@ material = SubResource("Mat_roof")
 [node name="Owl" type="Node3D" parent="Shed"]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.8, 2.3, 0.4)
 script = ExtResource("7_owl")
-screech_sound = ExtResource("24_owl_screech")
-flap_sound = ExtResource("25_wing_flaps")
+screech_sound = ExtResource("26_owl_screech")
+flap_sound = ExtResource("27_wing_flaps")
 
 [node name="BloodTrail" type="Node3D" parent="."]
 
@@ -525,23 +573,35 @@ metadata/ground_offset = 1.6
 
 [node name="Stalker" type="Node3D" parent="."]
 script = ExtResource("8_stalker_sound")
-rustle_sound = ExtResource("22_bush_rustle")
-crack_sound = ExtResource("23_branch_crack")
+rustle_sound = ExtResource("24_bush_rustle")
+crack_sound = ExtResource("25_branch_crack")
 side_distance = 9.0
 side = 1.0
 
 [node name="EcoBump" type="Node3D" parent="."]
 script = ExtResource("9_eco_bump")
-impact_sound = ExtResource("26_impact_thud")
-ring_sound = ExtResource("27_tinnitus")
+impact_sound = ExtResource("28_impact_thud")
+ring_sound = ExtResource("29_tinnitus")
 
 [node name="BarkBeyond" type="AudioStreamPlayer3D" parent="." groups=["snap_ground"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -82)
-stream = ExtResource("30_dog_bark_1")
+stream = ExtResource("32_dog_bark_1")
 volume_db = 4.0
 unit_size = 12.0
 max_distance = 150.0
 metadata/ground_offset = 1.0
+
+[node name="Deer0" type="Node3D" parent="." groups=["snap_ground"]]
+transform = Transform3D(-0.93969, 0, -0.34202, 0, 1, 0, 0.34202, 0, -0.93969, 9, 0, 60)
+script = ExtResource("21_animal_flee")
+model_scene = ExtResource("22_Deer")
+flee_sound = ExtResource("25_branch_crack")
+
+[node name="Deer1" type="Node3D" parent="." groups=["snap_ground"]]
+transform = Transform3D(0.5, 0, 0.86603, 0, 1, 0, -0.86603, 0, 0.5, -13, 0, 24)
+script = ExtResource("21_animal_flee")
+model_scene = ExtResource("22_Deer")
+flee_sound = ExtResource("25_branch_crack")
 
 [node name="Markers" type="Node3D" parent="."]
 

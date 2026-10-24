@@ -29,11 +29,11 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 8)
 	center.add_child(box)
 
-	_title = _label("ECOS", 48, Color(0.82, 0.8, 0.74))
+	_title = _label("ECOS", 72, Color(0.82, 0.8, 0.74))
 	box.add_child(_title)
-	box.add_child(_label("ninguém sai da mata", 10, Color(0.45, 0.43, 0.4)))
+	box.add_child(_label("ninguém sai da mata", 15, Color(0.45, 0.43, 0.4)))
 	var space := Control.new()
-	space.custom_minimum_size = Vector2(0, 24)
+	space.custom_minimum_size = Vector2(0, 36)
 	box.add_child(space)
 
 	var play := _button("Novo jogo")
@@ -43,14 +43,14 @@ func _ready() -> void:
 	test.pressed.connect(_on_test)
 	box.add_child(test)
 
-	_volume_label = _label("", 10, Color(0.6, 0.58, 0.54))
+	_volume_label = _label("", 15, Color(0.6, 0.58, 0.54))
 	box.add_child(_volume_label)
 	var vol := HSlider.new()
 	vol.min_value = 0.0
 	vol.max_value = 100.0
 	vol.step = 1.0
 	vol.value = Game.master_volume * 100.0
-	vol.custom_minimum_size = Vector2(200, 16)
+	vol.custom_minimum_size = Vector2(300, 24)
 	vol.value_changed.connect(_on_volume)
 	box.add_child(vol)
 	_on_volume(vol.value)
@@ -58,7 +58,7 @@ func _ready() -> void:
 	var quit := _button("Sair")
 	quit.pressed.connect(Game.quit_game)
 	box.add_child(quit)
-	box.add_child(_label("Use fone de ouvido. Jogue no escuro.", 9, Color(0.4, 0.38, 0.36)))
+	box.add_child(_label("Use fone de ouvido. Jogue no escuro.", 13, Color(0.4, 0.38, 0.36)))
 
 	play.grab_focus()
 
@@ -95,7 +95,7 @@ func _show_loading() -> void:
 	for child in get_children():
 		if child is CenterContainer:
 			child.visible = false
-	var l := _label("carregando...", 11, Color(0.5, 0.48, 0.45))
+	var l := _label("carregando...", 16, Color(0.5, 0.48, 0.45))
 	l.set_anchors_preset(Control.PRESET_FULL_RECT)
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	add_child(l)
@@ -134,5 +134,5 @@ func _label(text: String, size: int, color: Color) -> Label:
 func _button(text: String) -> Button:
 	var b := Button.new()
 	b.text = text
-	b.custom_minimum_size = Vector2(200, 0)
+	b.custom_minimum_size = Vector2(300, 40)
 	return b

@@ -2,8 +2,11 @@
 class_name ForestScatter
 extends Node3D
 ## Espalha árvores, mato e arbustos em cima de um ForestTerrain.
-## Tudo em MultiMesh (rápido mesmo com milhares). Troncos ganham colisão
-## (só no jogo, não no editor). Mesma "semente" = mesma floresta sempre.
+## Tudo em MultiMesh (rápido mesmo com milhares), dividido em blocos pra
+## o Godot só desenhar o que está perto. Troncos ganham colisão (só no jogo,
+## não no editor). Mesma "semente" = mesma floresta sempre.
+## Se houver modelos (.gltf) nas listas de "Modelos", usa eles; senão usa as
+## formas simples geradas por código.
 
 @export var terrain_path: NodePath
 @export var scatter_seed: int = 11:
@@ -35,6 +38,33 @@ extends Node3D
 		_queue_regen()
 ## Arbustos extras na beira do barranco, pra esconder a queda.
 @export var cliff_bush_count: int = 160
+@export_group("Modelos")
+## Árvores: cena, peso no sorteio, escala (mín, máx) e raio do tronco (na escala 1).
+@export var tree_models: Array[PackedScene] = []:
+	set(value):
+		tree_models = value
+		_queue_regen()
+@export var tree_model_weights: PackedFloat32Array = PackedFloat32Array()
+@export var tree_model_scales: PackedVector2Array = PackedVector2Array()
+@export var tree_model_trunks: PackedFloat32Array = PackedFloat32Array()
+## Plantas baixas (arbustos, samambaias, cogumelos).
+@export var plant_models: Array[PackedScene] = []
+@export var plant_model_weights: PackedFloat32Array = PackedFloat32Array()
+@export var plant_model_scales: PackedVector2Array = PackedVector2Array()
+@export var plant_count: int = 2600
+## Fração das plantas que nasce perto da trilha (onde o jogador vê).
+@export var plant_near_path: float = 0.75
+## Capim (usa grass_count).
+@export var grass_models: Array[PackedScene] = []
+@export var grass_model_scales: PackedVector2Array = PackedVector2Array()
+@export var rock_models: Array[PackedScene] = []
+@export var rock_model_scales: PackedVector2Array = PackedVector2Array()
+@export var rock_count: int = 240
+## Tamanho do bloco (m) e distância máxima de desenho de cada camada.
+@export var chunk_size: float = 32.0
+@export var tree_draw_distance: float = 85.0
+@export var plant_draw_distance: float = 50.0
+@export var grass_draw_distance: float = 32.0
 @export_group("Texturas")
 @export var bark_texture: Texture2D
 @export var foliage_texture: Texture2D
@@ -86,10 +116,24 @@ func generate() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = scatter_seed
 
-	_scatter_trees(terrain, rng)
-	_scatter_cards(terrain, rng, grass_count, _grass_mesh(), true)
-	_scatter_cards(terrain, rng, bush_count, _bush_mesh(), false)
-	_scatter_cliff_bushes(terrain, rng)
+	if tree_models.is_empty():
+		_scatter_trees(terrain, rng)
+	else:
+		_scatter_model_trees(terrain, rng)
+	if grass_models.is_empty():
+		_scatter_cards(terrain, rng, grass_count, _grass_mesh(), true)
+	else:
+		_scatter_models(terrain, rng, "Grass", grass_models, PackedFloat32Array(), grass_model_scales,
+			grass_count, 1.0, grass_draw_distance, false)
+	if plant_models.is_empty():
+		_scatter_cards(terrain, rng, bush_count, _bush_mesh(), false)
+		_scatter_cliff_bushes(terrain, rng)
+	else:
+		_scatter_models(terrain, rng, "Plants", plant_models, plant_model_weights, plant_model_scales,
+			plant_count, plant_near_path, plant_draw_distance, false)
+		_scatter_model_cliff_bushes(terrain, rng)
+	if not rock_models.is_empty():
+		_scatter_rocks(terrain, rng)
 
 
 # ------------------------------------------------------------------ regras
@@ -447,3 +491,214 @@ func _grass_mesh() -> ArrayMesh:
 
 func _bush_mesh() -> ArrayMesh:
 	return _cross_cards(1.6, 1.3, bush_texture, Color(0.75, 0.85, 0.75))
+
+
+# ------------------------------------------------------------------ modelos (.gltf)
+
+func _pick(rng: RandomNumberGenerator, count: int, weights: PackedFloat32Array) -> int:
+	if weights.size() != count:
+		return rng.randi() % count
+	var total := 0.0
+	for w in weights:
+		total += w
+	var r := rng.randf() * total
+	for i in count:
+		r -= weights[i]
+		if r <= 0.0:
+			return i
+	return count - 1
+
+
+func _scale_for(rng: RandomNumberGenerator, scales: PackedVector2Array, idx: int) -> float:
+	if idx < scales.size():
+		return rng.randf_range(scales[idx].x, scales[idx].y)
+	return rng.randf_range(0.8, 1.2)
+
+
+## Sorteia um ponto válido. near_path_prob = chance de nascer perto da trilha.
+## Devolve Vector2(INF, INF) se não achou.
+func _find_spot(terrain: ForestTerrain, rng: RandomNumberGenerator, near_path_prob: float,
+		min_path: float, near_max: float, clearing_extra: float, check_exclusion: bool) -> Vector2:
+	var half := terrain.size * 0.5 - 6.0
+	for attempt in 8:
+		var x: float
+		var z: float
+		var pts := terrain.path_points
+		if rng.randf() < near_path_prob and pts.size() >= 2:
+			var seg := rng.randi_range(0, pts.size() - 2)
+			var base := pts[seg].lerp(pts[seg + 1], rng.randf())
+			var ang := rng.randf() * TAU
+			var dist := min_path + pow(rng.randf(), 0.8) * near_max
+			x = base.x + cos(ang) * dist
+			z = base.y + sin(ang) * dist
+		else:
+			x = rng.randf_range(-half, half)
+			z = rng.randf_range(-half, half)
+		if absf(x) > half or absf(z) > half:
+			continue
+		if terrain.distance_to_path(x, z, min_path + 0.5) < min_path:
+			continue
+		if _in_clearing(terrain, x, z, clearing_extra):
+			continue
+		if _near_cliff_edge(terrain, z, 0.5, 2.5):
+			continue
+		if check_exclusion and _in_exclusion(x, z):
+			continue
+		return Vector2(x, z)
+	return Vector2(INF, INF)
+
+
+func _scatter_model_trees(terrain: ForestTerrain, rng: RandomNumberGenerator) -> void:
+	var placements := []  # [modelo, Transform3D]
+	var trunks := []
+	var half := terrain.size * 0.5
+	var cell := tree_min_spacing
+	var grid := {}
+	var attempts := tree_count * 6
+	while placements.size() < tree_count and attempts > 0:
+		attempts -= 1
+		var x := rng.randf_range(-half, half)
+		var z := rng.randf_range(-half, half)
+		if terrain.distance_to_path(x, z, tree_path_clearance + 1.0) < tree_path_clearance:
+			continue
+		if _in_clearing(terrain, x, z, 2.0):
+			continue
+		if _near_cliff_edge(terrain, z, 2.5, 3.0):
+			continue
+		if _in_exclusion(x, z):
+			continue
+		var key := Vector2i(floori(x / cell), floori(z / cell))
+		var too_close := false
+		for dx in range(-1, 2):
+			for dz in range(-1, 2):
+				var k2 := key + Vector2i(dx, dz)
+				if grid.has(k2) and (grid[k2] as Vector2).distance_to(Vector2(x, z)) < tree_min_spacing:
+					too_close = true
+		if too_close:
+			continue
+		grid[key] = Vector2(x, z)
+		var idx := _pick(rng, tree_models.size(), tree_model_weights)
+		var sc := _scale_for(rng, tree_model_scales, idx)
+		var b := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(sc, sc * rng.randf_range(0.92, 1.1), sc))
+		var tilt_axis := Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1))
+		if tilt_axis.length_squared() > 0.01:
+			b = Basis(tilt_axis.normalized(), rng.randf_range(0.0, 0.05)) * b
+		var pos := Vector3(x, terrain.height_at(x, z) - 0.2, z)
+		placements.append([idx, Transform3D(b, pos)])
+		var trunk := tree_model_trunks[idx] if idx < tree_model_trunks.size() else 0.3
+		trunks.append([pos, trunk * sc])
+	_build_chunked("Trees", tree_models, placements, true, tree_draw_distance)
+	_add_trunk_collisions(trunks)
+
+
+func _scatter_models(terrain: ForestTerrain, rng: RandomNumberGenerator, layer: String,
+		models: Array[PackedScene], weights: PackedFloat32Array, scales: PackedVector2Array,
+		count: int, near_prob: float, draw_distance: float, shadows: bool) -> void:
+	var placements := []
+	var is_grass := layer == "Grass"
+	var min_path := terrain.path_width * (0.55 if is_grass else 0.9)
+	var near_max := grass_max_path_distance if is_grass else 22.0
+	for i in count:
+		var spot := _find_spot(terrain, rng, near_prob, min_path, near_max,
+			-3.0 if is_grass else -1.0, not is_grass)
+		if spot.x == INF:
+			continue
+		var idx := _pick(rng, models.size(), weights)
+		var sc := _scale_for(rng, scales, idx)
+		var b := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(sc, sc * rng.randf_range(0.85, 1.15), sc))
+		placements.append([idx, Transform3D(b, Vector3(spot.x, terrain.height_at(spot.x, spot.y) - 0.04, spot.y))])
+	_build_chunked(layer, models, placements, shadows, draw_distance)
+
+
+func _scatter_model_cliff_bushes(terrain: ForestTerrain, rng: RandomNumberGenerator) -> void:
+	# Arbustos na beira do barranco (escondem a queda). Usa a 1ª planta da lista.
+	var placements := []
+	var half := terrain.size * 0.5 - 6.0
+	var sc_range := plant_model_scales[0] if not plant_model_scales.is_empty() else Vector2(1, 1)
+	for i in cliff_bush_count:
+		var x := rng.randf_range(-half, half)
+		var z := terrain.cliff_z + rng.randf_range(0.2, 2.2)
+		var sc := rng.randf_range(sc_range.x, sc_range.y) * 1.4
+		var b := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(sc, sc * rng.randf_range(0.9, 1.3), sc))
+		placements.append([0, Transform3D(b, Vector3(x, terrain.height_at(x, z) - 0.1, z))])
+	_build_chunked("CliffBushes", plant_models, placements, false, plant_draw_distance)
+
+
+func _scatter_rocks(terrain: ForestTerrain, rng: RandomNumberGenerator) -> void:
+	var placements := []
+	var blockers := []
+	for i in rock_count:
+		var spot := _find_spot(terrain, rng, 0.4, 2.8, 20.0, 0.0, true)
+		if spot.x == INF:
+			continue
+		var idx := rng.randi() % rock_models.size()
+		var sc := _scale_for(rng, rock_model_scales, idx)
+		var b := Basis(Vector3.UP, rng.randf() * TAU)
+		var tilt_axis := Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1))
+		if tilt_axis.length_squared() > 0.01:
+			b = Basis(tilt_axis.normalized(), rng.randf_range(0.0, 0.25)) * b
+		b = b.scaled(Vector3(sc, sc, sc))
+		var pos := Vector3(spot.x, terrain.height_at(spot.x, spot.y) - 0.35 * sc, spot.y)
+		placements.append([idx, Transform3D(b, pos)])
+		if sc > 0.45:
+			blockers.append([pos, 1.1 * sc])
+	_build_chunked("Rocks", rock_models, placements, true, plant_draw_distance)
+	_add_trunk_collisions(blockers)
+
+
+## Agrupa por (modelo, bloco) e cria um MultiMeshInstance3D por peça do modelo.
+func _build_chunked(layer: String, models: Array[PackedScene], placements: Array, shadows: bool, draw_distance: float) -> void:
+	var parts_cache := {}
+	var buckets := {}
+	for p: Array in placements:
+		var idx := int(p[0])
+		var t := p[1] as Transform3D
+		var key := Vector3i(idx, floori(t.origin.x / chunk_size), floori(t.origin.z / chunk_size))
+		if not buckets.has(key):
+			buckets[key] = []
+		(buckets[key] as Array).append(t)
+	for key: Vector3i in buckets:
+		if not parts_cache.has(key.x):
+			parts_cache[key.x] = ModelUtil.extract_parts(models[key.x])
+		var center := Vector3((key.y + 0.5) * chunk_size, 0.0, (key.z + 0.5) * chunk_size)
+		var list := buckets[key] as Array
+		for part: Array in parts_cache[key.x]:
+			var mesh := part[0] as Mesh
+			var local := part[1] as Transform3D
+			var mm := MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_3D
+			mm.mesh = mesh
+			mm.instance_count = list.size()
+			for i in list.size():
+				var t := list[i] as Transform3D
+				t.origin -= center
+				mm.set_instance_transform(i, t * local)
+			var mmi := MultiMeshInstance3D.new()
+			mmi.name = "%s_%d_%d_%d" % [layer, key.x, key.y, key.z]
+			mmi.multimesh = mm
+			mmi.position = center
+			mmi.visibility_range_end = draw_distance
+			mmi.visibility_range_end_margin = 6.0
+			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows \
+				else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			mmi.set_meta("scatter_part", true)
+			add_child(mmi)
+			_built.append(mmi)
+
+
+func _add_trunk_collisions(trunks: Array) -> void:
+	if Engine.is_editor_hint() or trunks.is_empty():
+		return
+	var body := StaticBody3D.new()
+	body.name = "Collisions_%d" % _built.size()
+	body.set_meta("scatter_part", true)
+	add_child(body)
+	_built.append(body)
+	for t: Array in trunks:
+		var shape := CylinderShape3D.new()
+		shape.radius = maxf(float(t[1]), 0.12)
+		shape.height = 4.0
+		var cs := CollisionShape3D.new()
+		cs.shape = shape
+		cs.position = (t[0] as Vector3) + Vector3.UP * 2.0
+		body.add_child(cs)

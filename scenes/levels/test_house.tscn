@@ -24,7 +24,7 @@ shader = ExtResource("1_psx_world")
 shader_parameter/albedo_tex = ExtResource("2_wallpaper_dirty")
 shader_parameter/tint = Color(1, 1, 1, 1)
 shader_parameter/tiles_per_meter = 0.5
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_floor"]
@@ -33,7 +33,7 @@ shader = ExtResource("1_psx_world")
 shader_parameter/albedo_tex = ExtResource("3_wood_floor")
 shader_parameter/tint = Color(1, 1, 1, 1)
 shader_parameter/tiles_per_meter = 0.6
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_ceiling"]
@@ -42,7 +42,7 @@ shader = ExtResource("1_psx_world")
 shader_parameter/albedo_tex = ExtResource("4_ceiling_stained")
 shader_parameter/tint = Color(0.9, 0.9, 0.85, 1)
 shader_parameter/tiles_per_meter = 0.5
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_furniture"]
@@ -51,7 +51,7 @@ shader = ExtResource("1_psx_world")
 shader_parameter/albedo_tex = ExtResource("3_wood_floor")
 shader_parameter/tint = Color(0.6, 0.55, 0.5, 1)
 shader_parameter/tiles_per_meter = 1.2
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_tile"]
@@ -60,7 +60,7 @@ shader = ExtResource("1_psx_world")
 shader_parameter/albedo_tex = ExtResource("5_concrete")
 shader_parameter/tint = Color(0.8, 0.85, 0.8, 1)
 shader_parameter/tiles_per_meter = 0.7
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="ShaderMaterial" id="Mat_metal"]
@@ -69,7 +69,7 @@ shader = ExtResource("1_psx_world")
 shader_parameter/albedo_tex = ExtResource("5_concrete")
 shader_parameter/tint = Color(0.75, 0.75, 0.72, 1)
 shader_parameter/tiles_per_meter = 1
-shader_parameter/snap_resolution = Vector2(320, 180)
+shader_parameter/snap_resolution = Vector2(480, 270)
 shader_parameter/vertex_snap = true
 
 [sub_resource type="Environment" id="Env"]

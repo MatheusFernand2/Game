@@ -7,12 +7,15 @@
 [ext_resource type="AudioStream" path="res://assets/audio/coisa_step_2.wav" id="5_s2"]
 [ext_resource type="AudioStream" path="res://assets/audio/coisa_step_3.wav" id="6_s3"]
 [ext_resource type="AudioStream" path="res://assets/audio/coisa_hiss.wav" id="7_hiss"]
+[ext_resource type="PackedScene" path="res://assets/models/animals/Wolf.gltf" id="8_wolf"]
 
 [node name="Coisa" type="Node3D"]
 script = ExtResource("1_coisa")
 step_sounds = Array[AudioStream]([ExtResource("4_s1"), ExtResource("5_s2"), ExtResource("6_s3")])
 hiss_sound = ExtResource("7_hiss")
 catch_distance = 2.1
+model_scene = ExtResource("8_wolf")
+model_scale = 0.47
 
 [node name="Rig" type="Node3D" parent="."]
 transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 0, 0, 0)

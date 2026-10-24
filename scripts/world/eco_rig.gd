@@ -35,6 +35,11 @@ enum Pose { STAND, SIT_FACE, RUN, CRAWL }
 @export var cycle_speed := 1.6
 ## Cabeça dando "estalos" de vez em quando.
 @export var head_twitch := false
+## Parado, mas vivo: respira e balança de leve (só na pose em pé).
+@export var idle_sway := false
+
+## Se definido, a cabeça vira devagar pra acompanhar esse nó (ex.: o jogador).
+var look_target: Node3D
 
 # Ossos: [junta A, junta B, raio]
 const BONES := [
@@ -132,17 +137,24 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if not animate and not head_twitch:
+	if not animate and not head_twitch and not idle_sway and look_target == null:
 		return
 	if animate:
 		phase += delta * cycle_speed
 		_apply_joints(_animated_joints(phase))
+	elif idle_sway and pose == Pose.STAND:
+		phase += delta
+		_apply_joints(_idle_joints(phase))
+	if look_target and is_instance_valid(look_target) and _head:
+		_look_head(look_target.global_position + Vector3.UP * 1.6, delta)
 	if head_twitch and _head:
 		if _rng.randf() < delta * 2.5:
 			_twitch = _rng.randf_range(-0.6, 0.6)
 		_twitch_now = lerpf(_twitch_now, _twitch, clampf(delta * 25.0, 0.0, 1.0))
-		_head.rotate_object_local(Vector3.BACK, _twitch_now - _head.get_meta("roll", 0.0))
-		_head.set_meta("roll", _twitch_now)
+		# Com alvo de olhar, o estalo já entra em _look_head.
+		if look_target == null:
+			_head.rotate_object_local(Vector3.BACK, _twitch_now - _head.get_meta("roll", 0.0))
+			_head.set_meta("roll", _twitch_now)
 
 
 ## Junta atual (coordenadas locais). Útil pra prender coisas na mão, por exemplo.
@@ -190,6 +202,36 @@ func _animated_joints(p: float) -> Dictionary:
 	return _base_joints()
 
 
+func _idle_joints(t: float) -> Dictionary:
+	var out := POSE_STAND.duplicate()
+	var breath := sin(t * 1.3) * 0.012
+	var sway := Vector3(sin(t * 0.37) * 0.025, 0.0, sin(t * 0.23) * 0.015)
+	for k: String in ["chest", "neck", "head", "shoulder_l", "shoulder_r"]:
+		out[k] = (out[k] as Vector3) + sway + Vector3(0, breath, 0)
+	# Braços pendurados acompanham com atraso (parecem pesados).
+	for k: String in ["elbow_l", "elbow_r", "hand_l", "hand_r"]:
+		out[k] = (out[k] as Vector3) + sway * 0.6 + Vector3(0, breath * 0.5, 0)
+	return out
+
+
+## Vira a cabeça (só pros lados e um pouco pra cima/baixo) na direção do alvo.
+var _look_yaw := 0.0
+var _look_pitch := 0.0
+
+
+func _look_head(world_point: Vector3, delta: float) -> void:
+	var local := to_local(world_point) - _head.position
+	var yaw := clampf(atan2(-local.x, -local.z), -1.2, 1.2)
+	var pitch := clampf(atan2(local.y, Vector2(local.x, local.z).length()), -0.5, 0.5)
+	# Lento e "errado": acompanha com atraso.
+	_look_yaw = lerpf(_look_yaw, yaw, clampf(delta * 1.2, 0.0, 1.0))
+	_look_pitch = lerpf(_look_pitch, pitch, clampf(delta * 1.2, 0.0, 1.0))
+	# Sempre parte da pose de descanso (senão a rotação acumula a cada quadro).
+	var rest: Basis = _head.get_meta("rest_basis", _head.transform.basis)
+	_head.transform.basis = Basis(Vector3.UP, _look_yaw) * Basis(Vector3.RIGHT, _look_pitch) \
+		* rest * Basis(Vector3.BACK, _twitch_now)
+
+
 func _crawl_limb(j: Dictionary, end_name: String, mid_name: String, t: float, reach: float) -> void:
 	var swing := sin(t)
 	var lift := maxf(0.0, cos(t)) * 0.35
@@ -220,7 +262,11 @@ func _rebuild() -> void:
 
 	var skin := StandardMaterial3D.new()
 	skin.albedo_color = skin_color
-	skin.roughness = 1.0
+	skin.roughness = 0.9
+	# Contorno de luz fraco: a silhueta preta aparece contra o escuro.
+	skin.rim_enabled = true
+	skin.rim = 0.35
+	skin.rim_tint = 0.7
 	var joints := _base_joints()
 
 	for bone: Array in BONES:
@@ -309,6 +355,7 @@ func _apply_joints(joints: Dictionary) -> void:
 	var z := x.cross(up).normalized()
 	_head.transform = Transform3D(Basis(x, up, z), head_pos)
 	_head.set_meta("roll", 0.0)
+	_head.set_meta("rest_basis", _head.transform.basis)
 
 
 func _place_finger(finger: MeshInstance3D, elbow: Vector3, hand: Vector3) -> void:
