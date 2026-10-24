@@ -22,7 +22,8 @@ porque o que você não enxerga direito assusta mais.
 | Ctrl / C | Agachar |
 | E / clique esquerdo | Interagir (portas, itens) |
 | F / clique direito | Lanterna |
-| Esc | Pausar |
+| Esc | Pausar (volume e sensibilidade do mouse ficam aqui) |
+| - / + | Abaixar / aumentar volume |
 | F11 | Tela cheia |
 
 ## Estrutura

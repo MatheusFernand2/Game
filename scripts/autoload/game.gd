@@ -3,7 +3,13 @@ extends Node
 ## Registra os controles, guarda configurações e cuida da pausa.
 
 signal paused_changed(is_paused: bool)
+signal volume_changed(volume: float)
 
+const SETTINGS_PATH := "user://settings.cfg"
+const VOLUME_STEP := 0.1
+
+## Volume geral de 0 a 1 (começa baixo; o jogo é alto de propósito).
+var master_volume: float = 0.4
 ## Sensibilidade do mouse (graus por pixel).
 var mouse_sensitivity: float = 0.12
 var invert_y: bool = false
@@ -21,6 +27,8 @@ const KEY_BINDINGS := {
 	"pause": [KEY_ESCAPE],
 	"quit_from_pause": [KEY_Q],
 	"toggle_fullscreen": [KEY_F11],
+	"volume_down": [KEY_MINUS, KEY_KP_SUBTRACT],
+	"volume_up": [KEY_EQUAL, KEY_KP_ADD],
 }
 
 const MOUSE_BINDINGS := {
@@ -32,6 +40,8 @@ const MOUSE_BINDINGS := {
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_register_inputs()
+	load_settings()
+	_apply_volume()
 
 
 func _register_inputs() -> void:
@@ -57,10 +67,57 @@ func _unhandled_input(event: InputEvent) -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		else:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	elif event.is_action_pressed("volume_down"):
+		set_master_volume(master_volume - VOLUME_STEP)
+		save_settings()
+	elif event.is_action_pressed("volume_up"):
+		set_master_volume(master_volume + VOLUME_STEP)
+		save_settings()
 	elif event.is_action_pressed("pause"):
 		set_paused(not get_tree().paused)
 	elif get_tree().paused and event.is_action_pressed("quit_from_pause"):
-		get_tree().quit()
+		quit_game()
+
+
+func quit_game() -> void:
+	save_settings()
+	get_tree().quit()
+
+
+# ------------------------------------------------------------ configurações
+
+## Volume geral, de 0 (mudo) a 1 (máximo).
+func set_master_volume(value: float) -> void:
+	master_volume = clampf(snappedf(value, 0.01), 0.0, 1.0)
+	_apply_volume()
+	volume_changed.emit(master_volume)
+
+
+func set_mouse_sensitivity(value: float) -> void:
+	mouse_sensitivity = clampf(value, 0.02, 0.5)
+
+
+func _apply_volume() -> void:
+	var bus := AudioServer.get_bus_index("Master")
+	AudioServer.set_bus_mute(bus, master_volume <= 0.001)
+	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(master_volume, 0.001)))
+
+
+func load_settings() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) != OK:
+		return
+	master_volume = clampf(float(cfg.get_value("audio", "master_volume", master_volume)), 0.0, 1.0)
+	mouse_sensitivity = float(cfg.get_value("controls", "mouse_sensitivity", mouse_sensitivity))
+	invert_y = bool(cfg.get_value("controls", "invert_y", invert_y))
+
+
+func save_settings() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("audio", "master_volume", master_volume)
+	cfg.set_value("controls", "mouse_sensitivity", mouse_sensitivity)
+	cfg.set_value("controls", "invert_y", invert_y)
+	cfg.save(SETTINGS_PATH)
 
 
 func set_paused(value: bool) -> void:
@@ -69,6 +126,7 @@ func set_paused(value: bool) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	else:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		save_settings()
 	paused_changed.emit(value)
 
 

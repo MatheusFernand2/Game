@@ -141,7 +141,7 @@ environment = SubResource("Env")
 
 [node name="Ambience" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("15_ambient_drone_loop")
-volume_db = -6.0
+volume_db = -10.0
 autoplay = true
 
 [node name="Geometry" type="Node3D" parent="."]

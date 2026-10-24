@@ -99,7 +99,7 @@ func _on_hallway_scare(_p: Player) -> void:
 	await _wait(1.6)
 	hall_light_a.restore(0.35, FlickerLight.Mode.HEAVY)
 	var tw := create_tween()
-	tw.tween_property(ambience, "volume_db", -6.0, 6.0)
+	tw.tween_property(ambience, "volume_db", -10.0, 6.0)
 	await _wait(1.2)
 	if bedroom_door.is_open:
 		bedroom_door.slam()

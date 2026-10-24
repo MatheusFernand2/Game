@@ -199,7 +199,7 @@ nodes.append(f'[node name="TestHouse" type="Node3D"]\nscript = ExtResource("{scr
 nodes.append('[node name="WorldEnvironment" type="WorldEnvironment" parent="."]\nenvironment = SubResource("Env")\n')
 nodes.append(
     f'[node name="Ambience" type="AudioStreamPlayer" parent="."]\nstream = ExtResource("{snd_amb}")\n'
-    "volume_db = -6.0\nautoplay = true\n"
+    "volume_db = -10.0\nautoplay = true\n"
 )
 
 nodes.append('[node name="Geometry" type="Node3D" parent="."]\n')
