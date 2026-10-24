@@ -43,7 +43,8 @@ func interact(player: Node3D) -> void:
 func open_away_from(from_position: Vector3) -> void:
 	# Lado do jogador em relação à porta (eixo Z local).
 	var local := to_local(from_position)
-	var side := -1.0 if local.z > 0.0 else 1.0
+	# Ângulo positivo leva a ponta da porta para -Z local; então abre pro lado oposto ao jogador.
+	var side := 1.0 if local.z > 0.0 else -1.0
 	_rotate_to(open_angle * side, open_time, Tween.EASE_IN_OUT)
 	is_open = true
 	_play(creak_sound, -6.0, randf_range(0.85, 1.05))
@@ -73,7 +74,9 @@ func _rotate_to(angle_deg: float, duration: float, ease_type: Tween.EaseType) ->
 	if _tween and _tween.is_valid():
 		_tween.kill()
 	_busy = true
+	# A dobradiça é um corpo físico: anima no passo de física pra colisão acompanhar.
 	_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(ease_type)
+	_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	_tween.tween_property(hinge, "rotation_degrees:y", angle_deg, duration)
 	_tween.finished.connect(func() -> void: _busy = false)
 

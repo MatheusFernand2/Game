@@ -39,24 +39,23 @@ creak_sound = ExtResource("3_creak")
 slam_sound = ExtResource("4_slam")
 locked_sound = ExtResource("5_locked")
 
-[node name="Hinge" type="Node3D" parent="."]
+[node name="Hinge" type="AnimatableBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0, 0)
 
-[node name="Body" type="AnimatableBody3D" parent="Hinge"]
+[node name="Mesh" type="MeshInstance3D" parent="Hinge"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.02, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="Hinge/Body"]
 mesh = SubResource("Mesh_panel")
 
-[node name="Collision" type="CollisionShape3D" parent="Hinge/Body"]
+[node name="Collision" type="CollisionShape3D" parent="Hinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.02, 0)
 shape = SubResource("Shape_panel")
 
-[node name="KnobFront" type="MeshInstance3D" parent="Hinge/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, -0.05, -0.045)
+[node name="KnobFront" type="MeshInstance3D" parent="Hinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.81, 0.97, -0.045)
 mesh = SubResource("Mesh_knob")
 
-[node name="KnobBack" type="MeshInstance3D" parent="Hinge/Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, -0.05, 0.045)
+[node name="KnobBack" type="MeshInstance3D" parent="Hinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.81, 0.97, 0.045)
 mesh = SubResource("Mesh_knob")
 
 [node name="Sfx" type="AudioStreamPlayer3D" parent="."]
